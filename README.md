@@ -16,6 +16,30 @@ A secure, containerized contact form API similar to Formspree that validates ori
 
 ## Quick Start
 
+1. **Pull the Docker image** from Docker Hub:
+   ```bash
+   docker pull dungfu/formfling:latest
+   ```
+
+2. **Run FormFling** with your configuration:
+   ```bash
+   docker run -d \
+     -p 8080:80 \
+     -e TZ="America/New_York" \
+     -e SMTP_HOST="smtp.gmail.com" \
+     -e SMTP_USERNAME="your-email@gmail.com" \
+     -e SMTP_PASSWORD="your-app-password" \
+     -e SMTP_FROM_EMAIL="your-email@gmail.com" \
+     -e SMTP_TO_EMAIL="your-email@gmail.com" \
+     dungfu/formfling:latest
+   ```
+
+3. **Test your form endpoint**: `http://localhost:8080/contact.php`
+
+### Alternative: Build from Source
+
+If you prefer to build from source:
+
 1. **Clone or create the project files** in a directory
 2. **Configure environment variables** by copying `.env.example` to `.env` and updating values
 3. **Build and run** with Docker Compose:
@@ -193,6 +217,41 @@ form.addEventListener('submit', async (e) => {
 4. **Monitoring**: Monitor logs and health endpoint
 
 ### Docker Hub Deployment
+
+FormFling is automatically built and published to Docker Hub via GitHub Actions when version tags are created.
+
+**Available Tags:**
+- `latest` - Latest stable release
+- `v1.0.0` - Specific version tags
+- `v1.0` - Major.minor version tags
+- `v1` - Major version tags
+
+**Note**: Only version tags (e.g., `v1.0.0`) trigger deployments to Docker Hub. Regular commits build but don't deploy.
+
+```bash
+# Pull specific version
+docker pull dungfu/formfling:v1.0.0
+
+# Pull latest
+docker pull dungfu/formfling:latest
+
+# Deploy with Docker Compose using Docker Hub image
+version: '3.8'
+services:
+  formfling:
+    image: dungfu/formfling:latest
+    ports:
+      - "8080:80"
+    environment:
+      TZ: "America/New_York"
+      SMTP_HOST: "smtp.gmail.com"
+      SMTP_USERNAME: "your-email@gmail.com"
+      SMTP_PASSWORD: "your-app-password"
+      SMTP_FROM_EMAIL: "your-email@gmail.com"
+      SMTP_TO_EMAIL: "your-email@gmail.com"
+```
+
+### Build from Source (Alternative)
 
 ```bash
 # Build for production
