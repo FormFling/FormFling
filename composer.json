@@ -1,0 +1,22 @@
+{
+  "name": "formfling/api",
+  "description": "FormFling - Self-hosted contact form API service",
+  "type": "project",
+  "require": {
+    "php": ">=8.0",
+    "phpmailer/phpmailer": "^6.8"
+  },
+  "require-dev": {
+    "phpunit/phpunit": "^10.0"
+  },
+  "autoload": {
+    "psr-4": {
+      "FormFling\\": "src/"
+    }
+  },
+  "config": {
+    "optimize-autoloader": true,
+    "prefer-stable": true,
+    "sort-packages": true
+  }
+}

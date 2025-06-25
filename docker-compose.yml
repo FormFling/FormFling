@@ -1,0 +1,30 @@
+version: '3.8'
+
+services:
+  formfling:
+    build: .
+    ports:
+      - "8080:80"
+    environment:
+      # Allowed origins (comma-separated, or "*" for all)
+      # ALLOWED_ORIGINS: "https://www.yourdomain1.com,https://yourdomain2.com"
+      
+      # SMTP Configuration
+      SMTP_HOST: "smtp.gmail.com"
+      SMTP_PORT: "587"
+      SMTP_USERNAME: "your-email@gmail.com"
+      SMTP_PASSWORD: "your-app-password"
+      
+      # Email addresses
+      SMTP_FROM_EMAIL: "your-email@gmail.com"
+      SMTP_FROM_NAME: "FormFling Bot"
+      SMTP_TO_EMAIL: "your-email@gmail.com"
+      SMTP_TO_NAME: "Your Name"
+    volumes:
+      - ./logs:/var/log/apache2
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost/health.php"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
