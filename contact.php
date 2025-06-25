@@ -1,7 +1,7 @@
 <?php
 // Set up headers, timezone, and error reports
 header("Content-Type: application/json");
-date_default_timezone_set("UTC");
+date_default_timezone_set($_ENV['TZ'] ?? 'UTC');
 error_reporting(E_ALL ^ E_NOTICE ^ E_DEPRECATED ^ E_STRICT);
 
 // Import PHPMailer classes into the global namespace

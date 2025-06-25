@@ -37,6 +37,7 @@ docker-compose down
 
 | Variable | Description | Default |
 |----------|-------------|---------|
+| `TZ` | Timezone for timestamps | `UTC` |
 | `ALLOWED_ORIGINS` | Comma-separated list of allowed origins, or "*" for all | `*` (allows all) |
 | `SMTP_HOST` | SMTP server hostname | `smtp.gmail.com` |
 | `SMTP_PORT` | SMTP server port | `587` |
@@ -65,6 +66,23 @@ SMTP_HOST: "smtp.gmail.com"
 SMTP_PORT: "587"
 SMTP_USERNAME: "your-email@gmail.com"
 SMTP_PASSWORD: "your-16-char-app-password"  # Remove spaces when entering
+```
+
+## Common Timezone Examples
+
+```bash
+# US Timezones
+TZ="America/New_York"        # Eastern Time
+TZ="America/Chicago"         # Central Time  
+TZ="America/Denver"          # Mountain Time
+TZ="America/Los_Angeles"     # Pacific Time
+
+# Other Common Timezones
+TZ="Europe/London"           # UK
+TZ="Europe/Paris"            # Central Europe
+TZ="Asia/Tokyo"              # Japan
+TZ="Australia/Sydney"        # Australia East Coast
+TZ="UTC"                     # Coordinated Universal Time (default)
 ```
 
 ## Usage
@@ -186,6 +204,7 @@ docker push your-username/formfling
 # Deploy on server with origin restrictions
 docker run -d \
   -p 8080:80 \
+  -e TZ="America/New_York" \
   -e ALLOWED_ORIGINS="https://www.yourdomain1.com,https://yourdomain2.com" \
   -e SMTP_HOST="smtp.gmail.com" \
   -e SMTP_USERNAME="your-email@gmail.com" \

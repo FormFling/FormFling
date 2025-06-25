@@ -6,6 +6,9 @@ services:
     ports:
       - "8080:80"
     environment:
+      # Timezone (optional, defaults to UTC)
+      TZ: "America/New_York"
+      
       # Allowed origins (comma-separated, or "*" for all)
       # ALLOWED_ORIGINS: "https://www.yourdomain1.com,https://yourdomain2.com"
       
