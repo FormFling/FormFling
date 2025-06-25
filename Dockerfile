@@ -1,5 +1,11 @@
 FROM php:8.2-apache
 
+# Install system dependencies
+RUN apt-get update && apt-get install -y \
+    git \
+    unzip \
+    && rm -rf /var/lib/apt/lists/*
+
 # Install necessary PHP extensions
 RUN docker-php-ext-install mysqli pdo pdo_mysql
 
@@ -16,7 +22,7 @@ WORKDIR /var/www/html
 COPY composer.json ./
 
 # Install PHP dependencies (this will create composer.lock)
-RUN composer install --no-dev --optimize-autoloader --no-scripts
+RUN composer install --no-dev --optimize-autoloader --prefer-dist
 
 # Copy application files
 COPY contact.php health.php email-template.html ./
