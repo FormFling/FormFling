@@ -12,11 +12,11 @@ RUN a2enmod rewrite
 # Set working directory
 WORKDIR /var/www/html
 
-# Copy composer files first for better caching
-COPY composer.json composer.lock ./
+# Copy composer.json first
+COPY composer.json ./
 
-# Install PHP dependencies
-RUN composer install --no-dev --optimize-autoloader
+# Install PHP dependencies (this will create composer.lock)
+RUN composer install --no-dev --optimize-autoloader --no-scripts
 
 # Copy application files
 COPY contact.php health.php email-template.html ./
