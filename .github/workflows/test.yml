@@ -10,6 +10,9 @@ jobs:
   test:
     runs-on: ubuntu-latest
 
+    permissions:
+      contents: write
+
     steps:
     - name: Checkout repository
       uses: actions/checkout@v4
@@ -27,12 +30,12 @@ jobs:
       run: go mod verify
 
     - name: Run tests with coverage
-      run: go test -v -coverprofile=coverage.out ./...
+      run: go test -v ./...
 
-    - name: Upload coverage to Codecov
-      uses: codecov/codecov-action@v5
+    - name: Update coverage badge
+      uses: ncruces/go-coverage-report@v0
       with:
-        files: ./coverage.out
-        flags: unittests
-        name: codecov-umbrella
-        fail_ci_if_error: false
+        report: true
+        chart: true
+        amend: true
+      continue-on-error: true

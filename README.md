@@ -3,7 +3,7 @@
 A self-hosted, lightweight form submission service written in Go, designed as an alternative to Formspree. FormFling allows you to handle contact form submissions on static websites by forwarding them via email using SMTP.
 
 [![Tests](https://github.com/fireph/formfling/workflows/Run%20Tests/badge.svg)](https://github.com/fireph/formfling/actions/workflows/test.yml)
-[![Coverage](https://codecov.io/gh/fireph/formfling/branch/main/graph/badge.svg)](https://codecov.io/gh/fireph/formfling)
+[![Coverage](https://github.com/fireph/FormFling/wiki/coverage.svg)](https://github.com/fireph/FormFling/wiki/Test-coverage-report)
 
 ## Features
 
