@@ -21,7 +21,7 @@ A self-hosted, lightweight form submission service written in Go, designed as an
 
 1. Clone this repository:
 ```bash
-git clone https://github.com/fireph/formfling.git
+git clone https://github.com/fireph/FormFling.git
 cd formfling
 ```
 
@@ -158,7 +158,7 @@ Error:
 
 ```bash
 # Clone the repository
-git clone https://github.com/fireph/formfling.git
+git clone https://github.com/fireph/FormFling.git
 cd formfling
 
 # Install dependencies
