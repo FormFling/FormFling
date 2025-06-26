@@ -29,6 +29,9 @@ COPY --from=builder /app/formfling .
 # Copy the email template
 COPY --from=builder /app/email_template.html .
 
+# Copy the status template
+COPY --from=builder /app/status_template.html .
+
 # Expose port
 EXPOSE 8080
 

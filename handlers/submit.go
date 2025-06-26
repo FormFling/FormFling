@@ -2,8 +2,12 @@ package handlers
 
 import (
 	"encoding/json"
+	"fmt"
+	"io"
 	"log"
 	"net/http"
+	"net/url"
+	"strings"
 
 	"formfling/config"
 	"formfling/models"
@@ -13,10 +17,10 @@ import (
 
 type SubmitHandler struct {
 	config       *config.Config
-	emailService *services.EmailService
+	emailService services.EmailSender
 }
 
-func NewSubmitHandler(cfg *config.Config, emailService *services.EmailService) *SubmitHandler {
+func NewSubmitHandler(cfg *config.Config, emailService services.EmailSender) *SubmitHandler {
 	return &SubmitHandler{
 		config:       cfg,
 		emailService: emailService,
@@ -24,34 +28,42 @@ func NewSubmitHandler(cfg *config.Config, emailService *services.EmailService) *
 }
 
 func (h *SubmitHandler) Handle(w http.ResponseWriter, r *http.Request) {
-	w.Header().Set("Content-Type", "application/json")
-
 	if r.Method != http.MethodPost {
-		response := models.Response{Status: "error", Error: "must be a post"}
-		json.NewEncoder(w).Encode(response)
+		h.handleError(w, r, "must be a post", http.StatusMethodNotAllowed)
 		return
 	}
 
-	// Parse form data
-	if err := r.ParseForm(); err != nil {
-		response := models.Response{Status: "error", Error: "failed to parse form"}
-		json.NewEncoder(w).Encode(response)
-		return
-	}
+	var formData models.FormData
+	var err error
 
-	formData := models.FormData{
-		Name:    utils.CleanString(r.FormValue("name")),
-		Email:   utils.CleanString(r.FormValue("email")),
-		Subject: utils.CleanString(r.FormValue("subject")),
-		Message: utils.CleanString(r.FormValue("message")),
-		Phone:   utils.CleanString(r.FormValue("phone")),
-		Website: utils.CleanString(r.FormValue("website")),
+	// Parse data based on content type
+	contentType := r.Header.Get("Content-Type")
+	if strings.Contains(contentType, "application/json") {
+		// Parse JSON request body
+		formData, err = h.parseJSONRequest(r)
+		if err != nil {
+			h.handleError(w, r, "failed to parse JSON", http.StatusBadRequest)
+			return
+		}
+	} else {
+		// Parse form data (default)
+		if err := r.ParseForm(); err != nil {
+			h.handleError(w, r, "failed to parse form", http.StatusBadRequest)
+			return
+		}
+		formData = models.FormData{
+			Name:    utils.CleanString(r.FormValue("name")),
+			Email:   utils.CleanString(r.FormValue("email")),
+			Subject: utils.CleanString(r.FormValue("subject")),
+			Message: utils.CleanString(r.FormValue("message")),
+			Phone:   utils.CleanString(r.FormValue("phone")),
+			Website: utils.CleanString(r.FormValue("website")),
+		}
 	}
 
 	// Validate form
 	if err := utils.ValidateForm(formData); err != nil {
-		response := models.Response{Status: "error", Error: "server rejected"}
-		json.NewEncoder(w).Encode(response)
+		h.handleError(w, r, "server rejected", http.StatusBadRequest)
 		return
 	}
 
@@ -64,11 +76,103 @@ func (h *SubmitHandler) Handle(w http.ResponseWriter, r *http.Request) {
 	// Send email
 	if err := h.emailService.SendEmail(formData, origin); err != nil {
 		log.Printf("Error sending email: %v", err)
-		response := models.Response{Status: "error", Error: "failed to send email"}
+		h.handleError(w, r, "failed to send email", http.StatusInternalServerError)
+		return
+	}
+
+	h.handleSuccess(w, r)
+}
+
+func (h *SubmitHandler) parseJSONRequest(r *http.Request) (models.FormData, error) {
+	var formData models.FormData
+	
+	// Read the request body
+	body, err := io.ReadAll(r.Body)
+	if err != nil {
+		return formData, fmt.Errorf("failed to read request body: %v", err)
+	}
+	defer r.Body.Close()
+
+	// Parse JSON
+	if err := json.Unmarshal(body, &formData); err != nil {
+		return formData, fmt.Errorf("failed to unmarshal JSON: %v", err)
+	}
+
+	// Clean the data
+	formData.Name = utils.CleanString(formData.Name)
+	formData.Email = utils.CleanString(formData.Email)
+	formData.Subject = utils.CleanString(formData.Subject)
+	formData.Message = utils.CleanString(formData.Message)
+	formData.Phone = utils.CleanString(formData.Phone)
+	formData.Website = utils.CleanString(formData.Website)
+
+	return formData, nil
+}
+
+func (h *SubmitHandler) handleSuccess(w http.ResponseWriter, r *http.Request) {
+	// Check if this is an AJAX request (API mode)
+	if h.isAjaxRequest(r) {
+		w.Header().Set("Content-Type", "application/json")
+		response := models.Response{Status: "message sent"}
 		json.NewEncoder(w).Encode(response)
 		return
 	}
 
-	response := models.Response{Status: "message sent"}
-	json.NewEncoder(w).Encode(response)
+	// Handle form submission with redirect
+	redirectURL := h.getRedirectURL(r, "success")
+	http.Redirect(w, r, redirectURL, http.StatusSeeOther)
+}
+
+func (h *SubmitHandler) handleError(w http.ResponseWriter, r *http.Request, errorMsg string, statusCode int) {
+	// Check if this is an AJAX request (API mode)
+	if h.isAjaxRequest(r) {
+		w.Header().Set("Content-Type", "application/json")
+		w.WriteHeader(statusCode)
+		response := models.Response{Status: "error", Error: errorMsg}
+		json.NewEncoder(w).Encode(response)
+		return
+	}
+
+	// Handle form submission with redirect to error page
+	redirectURL := h.getRedirectURL(r, "error")
+	http.Redirect(w, r, redirectURL, http.StatusSeeOther)
+}
+
+func (h *SubmitHandler) isAjaxRequest(r *http.Request) bool {
+	// Check for common AJAX indicators
+	return r.Header.Get("X-Requested-With") == "XMLHttpRequest" ||
+		r.Header.Get("Content-Type") == "application/json" ||
+		strings.Contains(r.Header.Get("Accept"), "application/json")
+}
+
+func (h *SubmitHandler) getRedirectURL(r *http.Request, status string) string {
+	// First check for explicit redirect URL in form data
+	if redirectURL := r.FormValue("_redirect"); redirectURL != "" {
+		// Add status parameter
+		return h.addStatusParam(redirectURL, status)
+	}
+
+	// Fall back to referer with status page
+	referer := r.Header.Get("Referer")
+	if referer == "" {
+		// If no referer, redirect to our status page
+		return fmt.Sprintf("/status?type=%s", status)
+	}
+
+	// Parse the referer URL to add status parameter
+	return h.addStatusParam(referer, status)
+}
+
+func (h *SubmitHandler) addStatusParam(baseURL, status string) string {
+	parsedURL, err := url.Parse(baseURL)
+	if err != nil {
+		return fmt.Sprintf("/status?type=%s", status)
+	}
+
+	// Add or update the status parameter
+	query := parsedURL.Query()
+	query.Set("formfling_status", status)
+	parsedURL.RawQuery = query.Encode()
+	
+	return parsedURL.String()
 }

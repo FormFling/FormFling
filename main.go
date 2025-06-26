@@ -30,6 +30,7 @@ func main() {
 	// Setup handlers
 	submitHandler := handlers.NewSubmitHandler(cfg, emailService)
 	healthHandler := handlers.NewHealthHandler()
+	statusHandler := handlers.NewStatusHandler(cfg)
 
 	// Setup router
 	r := mux.NewRouter()
@@ -37,6 +38,7 @@ func main() {
 
 	r.HandleFunc("/submit", submitHandler.Handle).Methods("POST", "OPTIONS")
 	r.HandleFunc("/health", healthHandler.Handle).Methods("GET")
+	r.HandleFunc("/status", statusHandler.Handle).Methods("GET")
 
 	log.Printf("FormFling server starting on port %s", cfg.Port)
 	log.Printf("Allowed origins: %v", cfg.AllowedOrigins)
