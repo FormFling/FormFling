@@ -68,8 +68,12 @@ func TestSubmitHandler_RedirectMode(t *testing.T) {
 
 	// Should have location header with success status
 	location := rr.Header().Get("Location")
-	if !strings.Contains(location, "formfling_status=success") {
-		t.Errorf("Expected redirect URL to contain formfling_status=success, got %s", location)
+	if !strings.Contains(location, "/status?type=success&redirect=https%3A%2F%2Fexample.com%2Fcontact") {
+		t.Error(
+			"Expected redirect URL to contain ",
+			"/status?type=success&redirect=https%3A%2F%2Fexample.com%2Fcontact",
+			", got ", location,
+		)
 	}
 }
 
@@ -347,8 +351,12 @@ func TestSubmitHandler_ValidationError(t *testing.T) {
 	}
 
 	location := rr.Header().Get("Location")
-	if !strings.Contains(location, "formfling_status=error") {
-		t.Errorf("Expected redirect URL to contain formfling_status=error, got %s", location)
+	if !strings.Contains(location, "/status?type=error&redirect=https%3A%2F%2Fexample.com%2Fcontact") {
+		t.Error(
+			"Expected redirect URL to contain ",
+			"/status?type=error&redirect=https%3A%2F%2Fexample.com%2Fcontact",
+			", got ", location,
+		)
 	}
 }
 
@@ -570,7 +578,7 @@ func TestGetRedirectURL(t *testing.T) {
 			formData:     url.Values{},
 			referer:      "https://example.com/contact",
 			status:       "success",
-			containsText: "formfling_status=success",
+			containsText: "/status?type=success&redirect=https%3A%2F%2Fexample.com%2Fcontact",
 		},
 		{
 			name:         "No referer",
