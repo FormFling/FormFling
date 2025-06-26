@@ -32,6 +32,9 @@ COPY --from=builder /app/email_template.html .
 # Copy the status template
 COPY --from=builder /app/status_template.html .
 
+# Copy the images directory
+COPY --from=builder /app/images ./images
+
 # Expose port
 EXPOSE 8080
 

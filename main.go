@@ -40,6 +40,9 @@ func main() {
 	r.HandleFunc("/health", healthHandler.Handle).Methods("GET")
 	r.HandleFunc("/status", statusHandler.Handle).Methods("GET")
 
+	// Static file serving for images
+	r.PathPrefix("/images/").Handler(http.StripPrefix("/images/", http.FileServer(http.Dir("./images/"))))
+
 	log.Printf("FormFling server starting on port %s", cfg.Port)
 	log.Printf("Allowed origins: %v", cfg.AllowedOrigins)
 
