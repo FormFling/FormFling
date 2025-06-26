@@ -74,7 +74,8 @@ FormFling is configured entirely through environment variables:
 | `TO_NAME` | Recipient display name | `` |
 | `ALLOWED_ORIGINS` | Comma-separated allowed origins | `*` (allows all) |
 | `FORM_TITLE` | Form title in emails | `Contact Me` |
-| `EMAIL_TEMPLATE` | Path to custom email template file | `email_template.html` |
+| `EMAIL_TEMPLATE` | Path to custom email template file | `./email_template.html` |
+| `STATUS_TEMPLATE` | Path to custom status page template file | `./status_template.html` |
 
 ### Gmail Setup
 
@@ -95,12 +96,12 @@ FormFling supports custom email templates. You can provide your own HTML templat
 docker run -d \
   --name formfling \
   -p 8080:8080 \
-  -v /path/to/your/template:/templates/custom_template.html \
+  -v /path/to/your/template:/templates/custom_email_template.html \
   -e SMTP_USERNAME=your-email@gmail.com \
   -e SMTP_PASSWORD=your-app-password \
   -e FROM_EMAIL=your-email@gmail.com \
   -e TO_EMAIL=recipient@example.com \
-  -e EMAIL_TEMPLATE=/templates/custom_template.html \
+  -e EMAIL_TEMPLATE=/templates/custom_email_template.html \
   dungfu/form-fling:latest
 ```
 
@@ -116,6 +117,33 @@ Your custom template can use the following variables:
 - `{{.SubmittedTime}}` - Time the form was submitted (e.g., "03:04 PM")
 - `{{.SubmittedDate}}` - Date the form was submitted (e.g., "02 January 2006")
 - `{{.Origin}}` - Origin URL where the form was submitted from
+
+### Custom Status Page Templates
+
+FormFling supports custom status page templates. You can provide your own HTML template by setting the `STATUS_TEMPLATE` environment variable to the path of your template file.
+
+#### Using Docker with Custom Status Template
+
+```bash
+docker run -d \
+  --name formfling \
+  -p 8080:8080 \
+  -v /path/to/your/status_template:/templates/custom_status_template.html \
+  -e SMTP_USERNAME=your-email@gmail.com \
+  -e SMTP_PASSWORD=your-app-password \
+  -e FROM_EMAIL=your-email@gmail.com \
+  -e TO_EMAIL=recipient@example.com \
+  -e STATUS_TEMPLATE=/templates/custom_status_template.html \
+  dungfu/form-fling:latest
+```
+
+#### Status Template Variables
+
+Your custom status template can use the following variables:
+- `{{.Status}}` - Status type (`success` or `error`)
+- `{{.FormTitle}}` - The form title
+- `{{.Message}}` - Status message to display
+- `{{.RedirectURL}}` - URL to redirect the user back to (if any)
 
 ## HTML Form Integration
 
