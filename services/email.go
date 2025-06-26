@@ -20,7 +20,7 @@ type EmailService struct {
 
 func NewEmailService(cfg *config.Config) *EmailService {
 	// Load email template
-	emailTemplate, err := template.ParseFiles("email_template.html")
+	emailTemplate, err := template.ParseFiles(cfg.EmailTemplate)
 	if err != nil {
 		log.Fatal("Error loading email template:", err)
 	}

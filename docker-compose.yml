@@ -7,6 +7,9 @@ services:
     # image: dungfu/formfling:latest
     ports:
       - "8080:8080"
+    # Uncomment to use a custom email template:
+    # volumes:
+    #   - ./custom_template.html:/templates/custom_template.html
     environment:
       # Required SMTP settings
       - SMTP_HOST=smtp.gmail.com
@@ -25,6 +28,8 @@ services:
       
       # Optional customization
       - FORM_TITLE=Contact Me
+      # - EMAIL_TEMPLATE=/templates/custom_template.html
+      - EMAIL_TEMPLATE=email_template.html
       - PORT=8080
     restart: unless-stopped
     healthcheck:

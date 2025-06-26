@@ -10,18 +10,21 @@ func TestLoad(t *testing.T) {
 	originalPort := os.Getenv("PORT")
 	originalSMTPHost := os.Getenv("SMTP_HOST")
 	originalOrigins := os.Getenv("ALLOWED_ORIGINS")
+	originalEmailTemplate := os.Getenv("EMAIL_TEMPLATE")
 
 	// Clean up after test
 	defer func() {
 		os.Setenv("PORT", originalPort)
 		os.Setenv("SMTP_HOST", originalSMTPHost)
 		os.Setenv("ALLOWED_ORIGINS", originalOrigins)
+		os.Setenv("EMAIL_TEMPLATE", originalEmailTemplate)
 	}()
 
 	// Test default values
 	os.Unsetenv("PORT")
 	os.Unsetenv("SMTP_HOST")
 	os.Unsetenv("ALLOWED_ORIGINS")
+	os.Unsetenv("EMAIL_TEMPLATE")
 
 	cfg := Load()
 
@@ -37,10 +40,15 @@ func TestLoad(t *testing.T) {
 		t.Errorf("Expected SMTP port 587, got %d", cfg.SMTPPort)
 	}
 
+	if cfg.EmailTemplate != "email_template.html" {
+		t.Errorf("Expected email template 'email_template.html', got %s", cfg.EmailTemplate)
+	}
+
 	// Test custom values
 	os.Setenv("PORT", "3000")
 	os.Setenv("SMTP_HOST", "smtp.example.com")
 	os.Setenv("ALLOWED_ORIGINS", "https://example.com,https://test.com")
+	os.Setenv("EMAIL_TEMPLATE", "/custom/template.html")
 
 	cfg = Load()
 
@@ -58,6 +66,10 @@ func TestLoad(t *testing.T) {
 
 	if cfg.AllowedOrigins[0] != "https://example.com" {
 		t.Errorf("Expected https://example.com, got %s", cfg.AllowedOrigins[0])
+	}
+
+	if cfg.EmailTemplate != "/custom/template.html" {
+		t.Errorf("Expected email template '/custom/template.html', got %s", cfg.EmailTemplate)
 	}
 }
 

@@ -74,6 +74,7 @@ FormFling is configured entirely through environment variables:
 | `TO_NAME` | Recipient display name | `` |
 | `ALLOWED_ORIGINS` | Comma-separated allowed origins | `*` (allows all) |
 | `FORM_TITLE` | Form title in emails | `Contact Me` |
+| `EMAIL_TEMPLATE` | Path to custom email template file | `email_template.html` |
 
 ### Gmail Setup
 
@@ -83,6 +84,38 @@ FormFling is configured entirely through environment variables:
    - Security → 2-Step Verification → App passwords
    - Generate a new app password for "Mail"
 3. Use your email and the generated app password in the configuration
+
+### Custom Email Templates
+
+FormFling supports custom email templates. You can provide your own HTML template by setting the `EMAIL_TEMPLATE` environment variable to the path of your template file.
+
+#### Using Docker with Custom Template
+
+```bash
+docker run -d \
+  --name formfling \
+  -p 8080:8080 \
+  -v /path/to/your/template:/templates/custom_template.html \
+  -e SMTP_USERNAME=your-email@gmail.com \
+  -e SMTP_PASSWORD=your-app-password \
+  -e FROM_EMAIL=your-email@gmail.com \
+  -e TO_EMAIL=recipient@example.com \
+  -e EMAIL_TEMPLATE=/templates/custom_template.html \
+  dungfu/formfling:latest
+```
+
+#### Template Variables
+
+Your custom template can use the following variables:
+- `{{.FormData.Name}}` - Sender's name
+- `{{.FormData.Email}}` - Sender's email
+- `{{.FormData.Subject}}` - Email subject
+- `{{.FormData.Message}}` - Email message
+- `{{.FormData.Phone}}` - Sender's phone number
+- `{{.FormData.Website}}` - Sender's website
+- `{{.SubmittedTime}}` - Time the form was submitted (e.g., "03:04 PM")
+- `{{.SubmittedDate}}` - Date the form was submitted (e.g., "02 January 2006")
+- `{{.Origin}}` - Origin URL where the form was submitted from
 
 ## HTML Form Integration
 
