@@ -215,26 +215,59 @@ func sendEmail(formData FormData, origin string) error {
 	// Connect to server and send email
 	addr := fmt.Sprintf("%s:%d", config.SMTPHost, config.SMTPPort)
 	
-	// Create TLS connection
-	conn, err := tls.Dial("tcp", addr, &tls.Config{
-		ServerName: config.SMTPHost,
-	})
-	if err != nil {
-		return fmt.Errorf("failed to connect to SMTP server: %v", err)
-	}
-	defer conn.Close()
+	// Handle different SMTP configurations
+	if config.SMTPPort == 465 {
+		// SSL/TLS connection for port 465
+		conn, err := tls.Dial("tcp", addr, &tls.Config{
+			ServerName: config.SMTPHost,
+		})
+		if err != nil {
+			return fmt.Errorf("failed to connect to SMTP server: %v", err)
+		}
+		defer conn.Close()
 
-	client, err := smtp.NewClient(conn, config.SMTPHost)
-	if err != nil {
-		return fmt.Errorf("failed to create SMTP client: %v", err)
-	}
-	defer client.Quit()
+		client, err := smtp.NewClient(conn, config.SMTPHost)
+		if err != nil {
+			return fmt.Errorf("failed to create SMTP client: %v", err)
+		}
+		defer client.Quit()
 
-	// Authenticate
-	if err := client.Auth(auth); err != nil {
-		return fmt.Errorf("failed to authenticate: %v", err)
-	}
+		// Authenticate
+		if err := client.Auth(auth); err != nil {
+			return fmt.Errorf("failed to authenticate: %v", err)
+		}
 
+		// Send email
+		return sendEmailData(client, msg)
+	} else {
+		// STARTTLS connection for port 587 (and others)
+		conn, err := smtp.Dial(addr)
+		if err != nil {
+			return fmt.Errorf("failed to connect to SMTP server: %v", err)
+		}
+		defer conn.Quit()
+
+		// Start TLS if available
+		if ok, _ := conn.Extension("STARTTLS"); ok {
+			tlsConfig := &tls.Config{
+				ServerName: config.SMTPHost,
+			}
+			if err := conn.StartTLS(tlsConfig); err != nil {
+				return fmt.Errorf("failed to start TLS: %v", err)
+			}
+		}
+
+		// Authenticate
+		if err := conn.Auth(auth); err != nil {
+			return fmt.Errorf("failed to authenticate: %v", err)
+		}
+
+		// Send email
+		return sendEmailData(conn, msg)
+	}
+}
+
+func sendEmailData(client *smtp.Client, msg string) error {
 	// Set sender and recipient
 	if err := client.Mail(config.FromEmail); err != nil {
 		return fmt.Errorf("failed to set sender: %v", err)
