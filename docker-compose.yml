@@ -3,31 +3,33 @@ version: '3.8'
 services:
   formfling:
     build: .
+    # Or use the published image:
+    # image: dungfu/formfling:latest
     ports:
-      - "8080:80"
+      - "8080:8080"
     environment:
-      # Timezone (optional, defaults to UTC)
-      TZ: "America/New_York"
+      # Required SMTP settings
+      - SMTP_HOST=smtp.gmail.com
+      - SMTP_PORT=587
+      - SMTP_USERNAME=your-email@gmail.com
+      - SMTP_PASSWORD=your-app-password
       
-      # Allowed origins (comma-separated, or "*" for all)
-      # ALLOWED_ORIGINS: "https://www.yourdomain1.com,https://yourdomain2.com"
+      # Required email settings
+      - FROM_EMAIL=your-email@gmail.com
+      - FROM_NAME=FormFling Bot
+      - TO_EMAIL=recipient@example.com
+      - TO_NAME=Your Name
       
-      # SMTP Configuration
-      SMTP_HOST: "smtp.gmail.com"
-      SMTP_PORT: "587"
-      SMTP_USERNAME: "your-email@gmail.com"
-      SMTP_PASSWORD: "your-app-password"
+      # Origin protection (comma-separated list)
+      - ALLOWED_ORIGINS=https://www.mydomain1.com,https://mydomain2.com
       
-      # Email addresses
-      SMTP_FROM_EMAIL: "your-email@gmail.com"
-      SMTP_FROM_NAME: "FormFling Bot"
-      SMTP_TO_EMAIL: "your-email@gmail.com"
-      SMTP_TO_NAME: "Your Name"
-    volumes:
-      - ./logs:/var/log/apache2
+      # Optional customization
+      - FORM_TITLE=Contact Me
+      - PORT=8080
     restart: unless-stopped
     healthcheck:
-      test: ["CMD", "curl", "-f", "http://localhost/health.php"]
+      test: ["CMD", "wget", "--no-verbose", "--tries=1", "--spider", "http://localhost:8080/health"]
       interval: 30s
       timeout: 10s
       retries: 3
+      start_period: 30s

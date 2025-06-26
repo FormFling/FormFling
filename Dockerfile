@@ -1,38 +1,40 @@
-FROM php:8.2-apache
+# Build stage
+FROM golang:1.21-alpine AS builder
 
-# Install system dependencies
-RUN apt-get update && apt-get install -y \
-    git \
-    unzip \
-    && rm -rf /var/lib/apt/lists/*
+WORKDIR /app
 
-# Install necessary PHP extensions
-RUN docker-php-ext-install mysqli pdo pdo_mysql
+# Copy go mod and sum files
+COPY go.mod go.sum ./
 
-# Install Composer
-RUN curl -sS https://getcomposer.org/installer | php -- --install-dir=/usr/local/bin --filename=composer
+# Download dependencies
+RUN go mod download
 
-# Enable Apache mod_rewrite
-RUN a2enmod rewrite
+# Copy source code
+COPY . .
 
-# Set working directory
-WORKDIR /var/www/html
+# Build the application
+RUN CGO_ENABLED=0 GOOS=linux go build -a -installsuffix cgo -o formfling .
 
-# Copy composer.json first
-COPY composer.json ./
+# Final stage
+FROM alpine:latest
 
-# Install PHP dependencies (this will create composer.lock)
-RUN composer install --no-dev --optimize-autoloader --prefer-dist
+# Install ca-certificates for HTTPS requests
+RUN apk --no-cache add ca-certificates
 
-# Copy application files
-COPY contact.php health.php email-template.html ./
+WORKDIR /root/
 
-# Set proper permissions
-RUN chown -R www-data:www-data /var/www/html
-RUN chmod -R 755 /var/www/html
+# Copy the binary from builder stage
+COPY --from=builder /app/formfling .
 
-# Expose port 80
-EXPOSE 80
+# Copy the email template
+COPY --from=builder /app/email_template.html .
 
-# Start Apache
-CMD ["apache2-foreground"]
+# Expose port
+EXPOSE 8080
+
+# Health check
+HEALTHCHECK --interval=30s --timeout=3s --start-period=5s --retries=3 \
+  CMD wget --no-verbose --tries=1 --spider http://localhost:8080/health || exit 1
+
+# Run the binary
+CMD ["./formfling"]

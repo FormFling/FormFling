@@ -1,322 +1,230 @@
-# FormFling - Self-Hosted Contact Form API
+# FormFling
 
-A secure, containerized contact form API similar to Formspree that validates origins and sends beautiful emails via SMTP.
+A self-hosted, lightweight form submission service written in Go, designed as an alternative to Formspree. FormFling allows you to handle contact form submissions on static websites by forwarding them via email using SMTP.
 
 ## Features
 
-- **Origin validation** - Only accepts requests from specified domains
-- **CORS support** - Properly handles cross-origin requests
-- **Email validation** - Validates email addresses and input
-- **Spam protection** - Basic input sanitization and validation
-- **Beautiful email templates** - Professional HTML email formatting similar to Formspree
-- **Additional field support** - Automatically includes any extra form fields
-- **Docker containerized** - Easy deployment and scaling
-- **Health checks** - Built-in health monitoring
-- **Configurable** - Environment variable configuration
+- 🚀 **Lightweight**: Single binary with minimal resource usage
+- 🔒 **Origin Protection**: Configurable allowed origins to prevent unauthorized usage
+- 📧 **Gmail Support**: Built-in support for Gmail SMTP
+- 🎨 **Beautiful Emails**: Responsive HTML email templates matching Formspree's design
+- 🐳 **Docker Ready**: Easy deployment with Docker and Docker Compose
+- 🔍 **Health Checks**: Built-in health endpoint for monitoring
+- 🛡️ **Security**: Input validation and sanitization
 
 ## Quick Start
 
-1. **Pull the Docker image** from Docker Hub:
-   ```bash
-   docker pull dungfu/formfling:latest
-   ```
+### Using Docker Compose
 
-2. **Run FormFling** with your configuration:
-   ```bash
-   docker run -d \
-     -p 8080:80 \
-     -e TZ="America/New_York" \
-     -e SMTP_HOST="smtp.gmail.com" \
-     -e SMTP_USERNAME="your-email@gmail.com" \
-     -e SMTP_PASSWORD="your-app-password" \
-     -e SMTP_FROM_EMAIL="your-email@gmail.com" \
-     -e SMTP_TO_EMAIL="your-email@gmail.com" \
-     dungfu/formfling:latest
-   ```
+1. Clone this repository:
+```bash
+git clone https://github.com/fireph/formfling.git
+cd formfling
+```
 
-3. **Test your form endpoint**: `http://localhost:8080/contact.php`
+2. Copy and edit the docker-compose.yml file with your settings:
+```bash
+cp docker-compose.yml docker-compose.local.yml
+# Edit docker-compose.local.yml with your email settings
+```
 
-### Alternative: Build from Source
+3. Run with Docker Compose:
+```bash
+docker-compose -f docker-compose.local.yml up -d
+```
 
-If you prefer to build from source:
-
-1. **Clone or create the project files** in a directory
-2. **Configure environment variables** by copying `.env.example` to `.env` and updating values
-3. **Build and run** with Docker Compose:
+### Using Docker
 
 ```bash
-# Build and start the container
-docker-compose up -d
-
-# View logs
-docker-compose logs -f
-
-# Stop the container
-docker-compose down
+docker run -d \
+  --name formfling \
+  -p 8080:8080 \
+  -e SMTP_USERNAME=your-email@gmail.com \
+  -e SMTP_PASSWORD=your-app-password \
+  -e FROM_EMAIL=your-email@gmail.com \
+  -e TO_EMAIL=recipient@example.com \
+  -e ALLOWED_ORIGINS=https://www.yourdomain.com \
+  dungfu/formfling:latest
 ```
 
 ## Configuration
 
-### Environment Variables
+FormFling is configured entirely through environment variables:
+
+### Required Variables
+
+| Variable | Description | Example |
+|----------|-------------|---------|
+| `SMTP_USERNAME` | SMTP username (usually your email) | `your-email@gmail.com` |
+| `SMTP_PASSWORD` | SMTP password (Gmail App Password) | `your-app-password` |
+| `FROM_EMAIL` | Sender email address | `your-email@gmail.com` |
+| `TO_EMAIL` | Recipient email address | `recipient@example.com` |
+
+### Optional Variables
 
 | Variable | Description | Default |
 |----------|-------------|---------|
-| `TZ` | Timezone for timestamps | `UTC` |
-| `ALLOWED_ORIGINS` | Comma-separated list of allowed origins, or "*" for all | `*` (allows all) |
+| `PORT` | Server port | `8080` |
 | `SMTP_HOST` | SMTP server hostname | `smtp.gmail.com` |
 | `SMTP_PORT` | SMTP server port | `587` |
-| `SMTP_USERNAME` | SMTP username | - |
-| `SMTP_PASSWORD` | SMTP password or app password | - |
-| `SMTP_FROM_EMAIL` | From email address | - |
-| `SMTP_FROM_NAME` | From name | `Contact Form Bot` |
-| `SMTP_TO_EMAIL` | Recipient email address | - |
-| `SMTP_TO_NAME` | Recipient name | `Website Owner` |
+| `FROM_NAME` | Sender display name | `FormFling Bot` |
+| `TO_NAME` | Recipient display name | `` |
+| `ALLOWED_ORIGINS` | Comma-separated allowed origins | `*` (allows all) |
+| `FORM_TITLE` | Form title in emails | `Contact Me` |
 
-### Gmail Setup (Recommended)
+### Gmail Setup
 
-For Gmail SMTP with two-factor authentication:
+1. Enable 2-Factor Authentication on your Google account
+2. Generate an App Password:
+   - Go to Google Account settings
+   - Security → 2-Step Verification → App passwords
+   - Generate a new app password for "Mail"
+3. Use your email and the generated app password in the configuration
 
-1. **Enable 2-factor authentication** on your Google Account
-2. **Generate an App Password**:
-   - Go to [Google Account Settings](https://myaccount.google.com/)
-   - Click "Security" → "2-Step Verification" → "App passwords"
-   - Select "Mail" → "Other (Custom name)" → Enter "FormFling"
-   - Copy the 16-character password (e.g., `abcd efgh ijkl mnop`)
-3. **Use the app password** (not your regular password) in `SMTP_PASSWORD`
+## HTML Form Integration
 
-```yaml
-# Gmail configuration example
-SMTP_HOST: "smtp.gmail.com"
-SMTP_PORT: "587"
-SMTP_USERNAME: "your-email@gmail.com"
-SMTP_PASSWORD: "your-16-char-app-password"  # Remove spaces when entering
-```
-
-## Common Timezone Examples
-
-```bash
-# US Timezones
-TZ="America/New_York"        # Eastern Time
-TZ="America/Chicago"         # Central Time  
-TZ="America/Denver"          # Mountain Time
-TZ="America/Los_Angeles"     # Pacific Time
-
-# Other Common Timezones
-TZ="Europe/London"           # UK
-TZ="Europe/Paris"            # Central Europe
-TZ="Asia/Tokyo"              # Japan
-TZ="Australia/Sydney"        # Australia East Coast
-TZ="UTC"                     # Coordinated Universal Time (default)
-```
-
-## Usage
-
-### HTML Form Example
+Create a form on your static website that submits to your FormFling instance:
 
 ```html
-<form id="contact-form" action="http://localhost:8080/contact.php" method="POST">
-    <input type="text" name="name" placeholder="Your Name" required>
-    <input type="email" name="email" placeholder="Your Email" required>
-    <input type="text" name="subject" placeholder="Subject" required>
-    <textarea name="message" placeholder="Your Message" required></textarea>
-    
-    <!-- Optional additional fields -->
-    <input type="tel" name="phone" placeholder="Phone Number">
-    <input type="url" name="website" placeholder="Website">
-    <input type="text" name="company" placeholder="Company">
-    
-    <button type="submit">Send Message</button>
+<form action="https://your-formfling-domain.com/submit" method="POST">
+  <input type="text" name="name" placeholder="Your Name" required>
+  <input type="email" name="email" placeholder="Your Email" required>
+  <input type="text" name="subject" placeholder="Subject">
+  <input type="tel" name="phone" placeholder="Phone (optional)">
+  <input type="url" name="website" placeholder="Website (optional)">
+  <textarea name="message" placeholder="Your Message" required></textarea>
+  <button type="submit">Send Message</button>
 </form>
 ```
 
-## Email Template
+### JavaScript Integration
 
-FormFling uses a beautiful HTML email template (`email-template.html`) that creates professional-looking emails similar to Formspree. The template includes:
-
-- **Responsive design** - Works on desktop and mobile email clients
-- **Professional styling** - Clean, modern appearance
-- **Automatic field inclusion** - Any form fields are automatically formatted and included
-- **Technical details section** - IP address, user agent, origin, and referrer information
-- **Timestamp** - When the form was submitted
-
-### Customizing the Email Template
-
-You can modify `email-template.html` to match your brand:
-
-- Change colors, fonts, and styling
-- Add your logo or branding
-- Modify the layout and structure
-- Add or remove sections
-
-The template uses these placeholders that are automatically replaced:
-
-- `{{SUBJECT}}` - The form subject
-- `{{WEBSITE_NAME}}` - Extracted from the referrer URL
-- `{{FORM_FIELDS}}` - Automatically generated form fields
-- `{{TIMESTAMP}}` - Submission timestamp
-- `{{CLIENT_IP}}` - User's IP address
-- `{{USER_AGENT}}` - User's browser information
-- `{{ORIGIN}}` - Origin header
-- `{{REFERER}}` - Referrer URL
-<form id="contact-form" action="http://localhost:8080/contact.php" method="POST">
-    <input type="text" name="name" placeholder="Your Name" required>
-    <input type="email" name="email" placeholder="Your Email" required>
-    <input type="text" name="subject" placeholder="Subject" required>
-    <textarea name="message" placeholder="Your Message" required></textarea>
-    <button type="submit">Send Message</button>
-</form>
-```
-
-### JavaScript Example
+For better user experience, handle the form submission with JavaScript:
 
 ```javascript
-const form = document.getElementById('contact-form');
-form.addEventListener('submit', async (e) => {
+document.getElementById('contact-form').addEventListener('submit', async function(e) {
     e.preventDefault();
     
-    const formData = new FormData(form);
+    const formData = new FormData(this);
     
     try {
-        const response = await fetch('http://localhost:8080/contact.php', {
+        const response = await fetch('https://your-formfling-domain.com/submit', {
             method: 'POST',
             body: formData
         });
         
         const result = await response.json();
         
-        if (result.status === 'success') {
+        if (result.status === 'message sent') {
             alert('Message sent successfully!');
-            form.reset();
+            this.reset();
         } else {
             alert('Error: ' + result.error);
         }
     } catch (error) {
-        alert('Network error: ' + error.message);
+        alert('Network error. Please try again.');
     }
 });
 ```
 
-## Security Features
+## API Endpoints
 
-- **Origin Validation**: 
-  - By default accepts requests from any domain ("*")
-  - Can be restricted to specific domains via `ALLOWED_ORIGINS` environment variable
-  - Checks both `Origin` and `Referer` headers when restricted
-- **Input Sanitization**: Strips HTML tags and dangerous content
-- **Email Validation**: Uses PHP's built-in email validation
-- **CORS Control**: Configurable cross-origin request handling
-- **Rate Limiting**: Can be added via reverse proxy (nginx, Cloudflare)
+- `POST /submit` - Submit form data
+- `GET /health` - Health check endpoint
+
+### Response Format
+
+Success:
+```json
+{
+  "status": "message sent"
+}
+```
+
+Error:
+```json
+{
+  "status": "error",
+  "error": "error description"
+}
+```
+
+## Development
+
+### Building from Source
+
+```bash
+# Clone the repository
+git clone https://github.com/fireph/formfling.git
+cd formfling
+
+# Install dependencies
+go mod download
+
+# Build
+go build -o formfling .
+
+# Run
+./formfling
+```
+
+### Local Development
+
+```bash
+# Set environment variables
+export SMTP_USERNAME=your-email@gmail.com
+export SMTP_PASSWORD=your-app-password
+export FROM_EMAIL=your-email@gmail.com
+export TO_EMAIL=recipient@example.com
+export ALLOWED_ORIGINS=http://localhost:3000
+
+# Run
+go run .
+```
 
 ## Deployment
 
-### Production Deployment
+### GitHub Actions
 
-1. **Use HTTPS**: Ensure your domain uses HTTPS
-2. **Environment Variables**: Set production values in `docker-compose.yml`
-3. **Reverse Proxy**: Use nginx or Cloudflare for additional security
-4. **Monitoring**: Monitor logs and health endpoint
+The repository includes a GitHub Actions workflow that automatically builds and pushes Docker images to Docker Hub when you push to the main branch or create a release.
 
-### Docker Hub Deployment
+1. Set up Docker Hub secrets in your GitHub repository:
+   - `DOCKERHUB_USERNAME` - Your Docker Hub username
+   - `DOCKERHUB_TOKEN` - Your Docker Hub access token
 
-FormFling is automatically built and published to Docker Hub via GitHub Actions when version tags are created.
+2. Push to main branch or create a release tag
 
-**Available Tags:**
-- `latest` - Latest stable release
-- `v1.0.0` - Specific version tags
-- `v1.0` - Major.minor version tags
-- `v1` - Major version tags
+### Manual Deployment
 
-**Note**: Only version tags (e.g., `v1.0.0`) trigger deployments to Docker Hub. Regular commits build but don't deploy.
-
+1. Build and push the Docker image:
 ```bash
-# Pull specific version
-docker pull dungfu/formfling:v1.0.0
-
-# Pull latest
-docker pull dungfu/formfling:latest
-
-# Deploy with Docker Compose using Docker Hub image
-version: '3.8'
-services:
-  formfling:
-    image: dungfu/formfling:latest
-    ports:
-      - "8080:80"
-    environment:
-      TZ: "America/New_York"
-      SMTP_HOST: "smtp.gmail.com"
-      SMTP_USERNAME: "your-email@gmail.com"
-      SMTP_PASSWORD: "your-app-password"
-      SMTP_FROM_EMAIL: "your-email@gmail.com"
-      SMTP_TO_EMAIL: "your-email@gmail.com"
+docker build -t dungfu/formfling:latest .
+docker push dungfu/formfling:latest
 ```
 
-### Build from Source (Alternative)
+2. Deploy to your server using docker-compose or your preferred orchestration tool
 
-```bash
-# Build for production
-docker build -t your-username/formfling .
+## Security Considerations
 
-# Push to Docker Hub
-docker push your-username/formfling
+- Always use HTTPS in production
+- Set `ALLOWED_ORIGINS` to restrict form submissions to your domains
+- Use Gmail App Passwords instead of your main password
+- Consider rate limiting at the reverse proxy level
+- Keep your FormFling instance updated
 
-# Deploy on server with origin restrictions
-docker run -d \
-  -p 8080:80 \
-  -e TZ="America/New_York" \
-  -e ALLOWED_ORIGINS="https://www.yourdomain1.com,https://yourdomain2.com" \
-  -e SMTP_HOST="smtp.gmail.com" \
-  -e SMTP_USERNAME="your-email@gmail.com" \
-  -e SMTP_PASSWORD="your-app-password" \
-  -e SMTP_FROM_EMAIL="your-email@gmail.com" \
-  -e SMTP_TO_EMAIL="your-email@gmail.com" \
-  your-username/formfling
+## Contributing
 
-# Or deploy without origin restrictions (accepts from any domain)
-docker run -d \
-  -p 8080:80 \
-  -e SMTP_HOST="smtp.gmail.com" \
-  -e SMTP_USERNAME="your-email@gmail.com" \
-  -e SMTP_PASSWORD="your-app-password" \
-  -e SMTP_FROM_EMAIL="your-email@gmail.com" \
-  -e SMTP_TO_EMAIL="your-email@gmail.com" \
-  your-username/formfling
-```
-
-## Health Check
-
-The container includes a health check endpoint at `/health.php`:
-
-```bash
-curl http://localhost:8080/health.php
-```
-
-## Troubleshooting
-
-### Common Issues
-
-1. **Origin errors**: 
-   - By default, all origins are allowed ("*")
-   - If you set `ALLOWED_ORIGINS`, ensure it matches your website's URL exactly
-   - Use comma-separated values for multiple domains
-2. **SMTP errors**: Check your email credentials and enable "Less secure app access" or use app passwords
-3. **CORS issues**: Verify your domain is in the allowed origins list
-
-### Debugging
-
-```bash
-# View container logs
-docker-compose logs -f formfling
-
-# Check health status
-curl http://localhost:8080/health.php
-
-# Test with curl
-curl -X POST http://localhost:8080/contact.php \
-  -H "Origin: https://www.yourdomain.com" \
-  -d "name=Test&email=test@example.com&subject=Test&message=This is a test message"
-```
+1. Fork the repository
+2. Create a feature branch
+3. Make your changes
+4. Add tests if applicable
+5. Submit a pull request
 
 ## License
 
-MIT License - feel free to use and modify FormFling as needed.
+This project is licensed under the MIT License - see the LICENSE file for details.
+
+## Acknowledgments
+
+- Inspired by [Formspree](https://formspree.io/)
+- Email template design based on Formspree's email format
