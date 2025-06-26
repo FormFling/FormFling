@@ -22,7 +22,7 @@ A self-hosted, lightweight form submission service written in Go, designed as an
 1. Clone this repository:
 ```bash
 git clone https://github.com/fireph/FormFling.git
-cd formfling
+cd FormFling
 ```
 
 2. Copy and edit the docker-compose.yml file with your settings:
@@ -47,7 +47,7 @@ docker run -d \
   -e FROM_EMAIL=your-email@gmail.com \
   -e TO_EMAIL=recipient@example.com \
   -e ALLOWED_ORIGINS=https://www.yourdomain.com \
-  dungfu/formfling:latest
+  dungfu/form-fling:latest
 ```
 
 ## Configuration
@@ -101,7 +101,7 @@ docker run -d \
   -e FROM_EMAIL=your-email@gmail.com \
   -e TO_EMAIL=recipient@example.com \
   -e EMAIL_TEMPLATE=/templates/custom_template.html \
-  dungfu/formfling:latest
+  dungfu/form-fling:latest
 ```
 
 #### Template Variables
@@ -192,7 +192,7 @@ Error:
 ```bash
 # Clone the repository
 git clone https://github.com/fireph/FormFling.git
-cd formfling
+cd FormFling
 
 # Install dependencies
 go mod download
@@ -234,8 +234,8 @@ The repository includes a GitHub Actions workflow that automatically builds and 
 
 1. Build and push the Docker image:
 ```bash
-docker build -t dungfu/formfling:latest .
-docker push dungfu/formfling:latest
+docker build -t dungfu/form-fling:latest .
+docker push dungfu/form-fling:latest
 ```
 
 2. Deploy to your server using docker-compose or your preferred orchestration tool
