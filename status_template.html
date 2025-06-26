@@ -110,12 +110,33 @@
             box-shadow: 0 10px 20px rgba(102, 126, 234, 0.3);
         }
         
+        .banner {
+            margin: 2rem auto 1rem auto;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+        
+        .banner img {
+            border-radius: 12px;
+            box-shadow: 0 4px 24px rgba(102, 126, 234, 0.15);
+            transition: transform 0.2s;
+            max-width: 256px;
+            width: 100%;
+            height: auto;
+        }
+        
+        .banner img:hover {
+            transform: scale(1.04) rotate(-1deg);
+        }
+        
         .powered-by {
             margin-top: 2rem;
             padding-top: 1.5rem;
             border-top: 1px solid #e5e7eb;
-            font-size: 0.8rem;
+            font-size: 0.9rem;
             color: #9ca3af;
+            letter-spacing: 0.03em;
         }
         
         @media (max-width: 480px) {
@@ -161,6 +182,12 @@
             <a href="javascript:history.back()" class="btn">Go Back</a>
         {{end}}
         
+        <div class="banner">
+            <a href="https://github.com/fireph/FormFling" target="_blank">
+                <img src="https://raw.githubusercontent.com/fireph/FormFling/main/images/form-fling-banner-rounded-512.png" alt="FormFling Logo" />
+            </a>
+        </div>
+        
         <div class="powered-by">
             <p>Powered by <strong>FormFling</strong></p>
         </div>
@@ -168,7 +195,7 @@
     
     {{if .RedirectURL}}
     <script>
-        let countdown = 5;
+        let countdown = 10;
         const countdownElement = document.getElementById('countdown');
         
         const timer = setInterval(() => {
