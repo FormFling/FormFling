@@ -1,6 +1,7 @@
 package handlers
 
 import (
+	"bytes"
 	"encoding/json"
 	"errors"
 	"net/http"
@@ -117,6 +118,154 @@ func TestSubmitHandler_AjaxMode(t *testing.T) {
 	responseBody := rr.Body.String()
 	if !strings.Contains(responseBody, "message sent") {
 		t.Errorf("Expected response to contain 'message sent', got %s", responseBody)
+	}
+}
+
+func TestSubmitHandler_JSONRequest_Success(t *testing.T) {
+	cfg := &config.Config{
+		SMTPHost:     "smtp.gmail.com",
+		SMTPPort:     587,
+		SMTPUsername: "test@example.com",
+		SMTPPassword: "password",
+		FromEmail:    "test@example.com",
+		ToEmail:      "recipient@example.com",
+		FormTitle:    "Test Form",
+	}
+
+	emailService := &mockEmailService{}
+	handler := NewSubmitHandler(cfg, emailService)
+
+	// Create JSON request body
+	formData := models.FormData{
+		Name:    "John Doe",
+		Email:   "john@example.com",
+		Message: "This is a test message with enough characters",
+	}
+
+	jsonData, err := json.Marshal(formData)
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	req, err := http.NewRequest("POST", "/submit", bytes.NewReader(jsonData))
+	if err != nil {
+		t.Fatal(err)
+	}
+	req.Header.Set("Content-Type", "application/json")
+
+	rr := httptest.NewRecorder()
+	handler.Handle(rr, req)
+
+	// Should return JSON (200 status) because of JSON content type
+	if status := rr.Code; status != http.StatusOK {
+		t.Errorf("Expected status 200, got %v", status)
+	}
+
+	// Should have JSON content type
+	contentType := rr.Header().Get("Content-Type")
+	if contentType != "application/json" {
+		t.Errorf("Expected content type application/json, got %s", contentType)
+	}
+
+	// Parse response
+	var response models.Response
+	if err := json.Unmarshal(rr.Body.Bytes(), &response); err != nil {
+		t.Errorf("Could not unmarshal response: %v", err)
+	}
+
+	if response.Status != "message sent" {
+		t.Errorf("Expected status 'message sent', got %s", response.Status)
+	}
+}
+
+func TestSubmitHandler_JSONRequest_ValidationError(t *testing.T) {
+	cfg := &config.Config{
+		SMTPHost:     "smtp.gmail.com",
+		SMTPPort:     587,
+		SMTPUsername: "test@example.com",
+		SMTPPassword: "password",
+		FromEmail:    "test@example.com",
+		ToEmail:      "recipient@example.com",
+		FormTitle:    "Test Form",
+	}
+
+	emailService := &mockEmailService{}
+	handler := NewSubmitHandler(cfg, emailService)
+
+	// Create JSON request body with invalid data
+	formData := models.FormData{
+		Name:    "",
+		Email:   "invalid-email",
+		Message: "short",
+	}
+
+	jsonData, err := json.Marshal(formData)
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	req, err := http.NewRequest("POST", "/submit", bytes.NewReader(jsonData))
+	if err != nil {
+		t.Fatal(err)
+	}
+	req.Header.Set("Content-Type", "application/json")
+
+	rr := httptest.NewRecorder()
+	handler.Handle(rr, req)
+
+	// Should return error status
+	if status := rr.Code; status != http.StatusBadRequest {
+		t.Errorf("Expected status 400, got %v", status)
+	}
+
+	// Parse response
+	var response models.Response
+	if err := json.Unmarshal(rr.Body.Bytes(), &response); err != nil {
+		t.Errorf("Could not unmarshal response: %v", err)
+	}
+
+	if response.Status != "error" {
+		t.Errorf("Expected status 'error', got %s", response.Status)
+	}
+}
+
+func TestSubmitHandler_JSONRequest_ParseError(t *testing.T) {
+	cfg := &config.Config{
+		FormTitle: "Test Form",
+	}
+
+	emailService := &mockEmailService{}
+	handler := NewSubmitHandler(cfg, emailService)
+
+	// Create invalid JSON
+	invalidJSON := `{"name": "John", "email": }`
+
+	req, err := http.NewRequest("POST", "/submit", strings.NewReader(invalidJSON))
+	if err != nil {
+		t.Fatal(err)
+	}
+	req.Header.Set("Content-Type", "application/json")
+
+	rr := httptest.NewRecorder()
+	handler.Handle(rr, req)
+
+	// Should return error status
+	if status := rr.Code; status != http.StatusBadRequest {
+		t.Errorf("Expected status 400, got %v", status)
+	}
+
+	// Parse response
+	var response models.Response
+	if err := json.Unmarshal(rr.Body.Bytes(), &response); err != nil {
+		t.Errorf("Could not unmarshal response: %v", err)
+	}
+
+	if response.Status != "error" {
+		t.Errorf("Expected status 'error', got %s", response.Status)
+	}
+
+	if response.Error != "failed to parse JSON" {
+		t.Errorf("Expected error 'failed to parse JSON', got %s", response.Error)
 	}
 }
 
