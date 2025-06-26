@@ -85,7 +85,7 @@ func (h *SubmitHandler) Handle(w http.ResponseWriter, r *http.Request) {
 
 func (h *SubmitHandler) parseJSONRequest(r *http.Request) (models.FormData, error) {
 	var formData models.FormData
-	
+
 	// Read the request body
 	body, err := io.ReadAll(r.Body)
 	if err != nil {
@@ -146,21 +146,21 @@ func (h *SubmitHandler) isAjaxRequest(r *http.Request) bool {
 }
 
 func (h *SubmitHandler) getRedirectURL(r *http.Request, status string) string {
-	// First check for explicit redirect URL in form data
+	// Only use explicit redirect URL from form data
 	if redirectURL := r.FormValue("_redirect"); redirectURL != "" {
-		// Add status parameter
+		// Add status parameter to the explicit redirect
 		return h.addStatusParam(redirectURL, status)
 	}
 
-	// Fall back to referer with status page
+	// Always redirect to status page, pass referer as redirect parameter for the "Go Back" functionality
 	referer := r.Header.Get("Referer")
-	if referer == "" {
-		// If no referer, redirect to our status page
-		return fmt.Sprintf("/status?type=%s", status)
+	if referer != "" {
+		// Pass the referer as redirect parameter so status page can redirect back
+		return fmt.Sprintf("/status?type=%s&redirect=%s", status, url.QueryEscape(referer))
 	}
 
-	// Parse the referer URL to add status parameter
-	return h.addStatusParam(referer, status)
+	// If no referer, just redirect to status page
+	return fmt.Sprintf("/status?type=%s", status)
 }
 
 func (h *SubmitHandler) addStatusParam(baseURL, status string) string {
@@ -173,6 +173,6 @@ func (h *SubmitHandler) addStatusParam(baseURL, status string) string {
 	query := parsedURL.Query()
 	query.Set("formfling_status", status)
 	parsedURL.RawQuery = query.Encode()
-	
+
 	return parsedURL.String()
 }
