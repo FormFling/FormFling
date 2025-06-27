@@ -19,7 +19,7 @@ services:
       
       # Required email settings
       - FROM_EMAIL=your-email@gmail.com
-      - FROM_NAME=FormFling Bot
+      - FROM_NAME=FormFling
       - TO_EMAIL=recipient@example.com
       - TO_NAME=Your Name
       

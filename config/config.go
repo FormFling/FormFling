@@ -30,7 +30,7 @@ func Load() *Config {
 		SMTPUsername:   getEnv("SMTP_USERNAME", ""),
 		SMTPPassword:   getEnv("SMTP_PASSWORD", ""),
 		FromEmail:      getEnv("FROM_EMAIL", ""),
-		FromName:       getEnv("FROM_NAME", "FormFling Bot"),
+		FromName:       getEnv("FROM_NAME", "FormFling"),
 		ToEmail:        getEnv("TO_EMAIL", ""),
 		ToName:         getEnv("TO_NAME", ""),
 		FormTitle:      getEnv("FORM_TITLE", "Contact Me"),

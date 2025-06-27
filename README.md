@@ -70,7 +70,7 @@ FormFling is configured entirely through environment variables:
 | `PORT` | Server port | `8080` |
 | `SMTP_HOST` | SMTP server hostname | `smtp.gmail.com` |
 | `SMTP_PORT` | SMTP server port | `587` |
-| `FROM_NAME` | Sender display name | `FormFling Bot` |
+| `FROM_NAME` | Sender display name | `FormFling` |
 | `TO_NAME` | Recipient display name | `` |
 | `ALLOWED_ORIGINS` | Comma-separated allowed origins | `*` (allows all) |
 | `FORM_TITLE` | Form title in emails | `Contact Me` |

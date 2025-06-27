@@ -49,7 +49,7 @@ func (s *EmailService) SendEmail(formData models.FormData, origin string) error 
 	auth := smtp.PlainAuth("", s.config.SMTPUsername, s.config.SMTPPassword, s.config.SMTPHost)
 
 	// Create message
-	subject := fmt.Sprintf("❗ %s Form ❗", s.config.FormTitle)
+	subject := fmt.Sprintf("New submission from %s", s.config.FormTitle)
 	mime := "MIME-version: 1.0;\nContent-Type: text/html; charset=\"UTF-8\";\n\n"
 
 	msg := fmt.Sprintf("From: %s <%s>\r\n", s.config.FromName, s.config.FromEmail)
