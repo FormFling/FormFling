@@ -9,10 +9,10 @@ import (
 	"net/url"
 	"strings"
 
-	"formfling/config"
-	"formfling/models"
-	"formfling/services"
-	"formfling/utils"
+	"formfling/internal/config"
+	"formfling/internal/models"
+	"formfling/internal/services"
+	"formfling/internal/utils"
 )
 
 type SubmitHandler struct {

@@ -6,7 +6,7 @@ import (
 	"net/http/httptest"
 	"testing"
 
-	"formfling/models"
+	"formfling/internal/models"
 )
 
 func TestHealthHandler(t *testing.T) {

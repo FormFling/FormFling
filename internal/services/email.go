@@ -9,8 +9,8 @@ import (
 	"net/smtp"
 	"time"
 
-	"formfling/config"
-	"formfling/models"
+	"formfling/internal/config"
+	"formfling/internal/models"
 )
 
 type EmailService struct {

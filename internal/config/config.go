@@ -34,8 +34,8 @@ func Load() *Config {
 		ToEmail:        getEnv("TO_EMAIL", ""),
 		ToName:         getEnv("TO_NAME", ""),
 		FormTitle:      getEnv("FORM_TITLE", "Contact Me"),
-		EmailTemplate:  getEnv("EMAIL_TEMPLATE", "./email_template.html"),
-		StatusTemplate: getEnv("STATUS_TEMPLATE", "./status_template.html"),
+		EmailTemplate:  getEnv("EMAIL_TEMPLATE", "./web/templates/email_template.html"),
+		StatusTemplate: getEnv("STATUS_TEMPLATE", "./web/templates/status_template.html"),
 	}
 
 	// Parse allowed origins

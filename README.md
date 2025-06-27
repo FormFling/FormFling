@@ -74,8 +74,8 @@ FormFling is configured entirely through environment variables:
 | `TO_NAME` | Recipient display name | `` |
 | `ALLOWED_ORIGINS` | Comma-separated allowed origins | `*` (allows all) |
 | `FORM_TITLE` | Form title in emails | `Contact Me` |
-| `EMAIL_TEMPLATE` | Path to custom email template file | `./email_template.html` |
-| `STATUS_TEMPLATE` | Path to custom status page template file | `./status_template.html` |
+| `EMAIL_TEMPLATE` | Path to custom email template file | `./web/templates/email_template.html` |
+| `STATUS_TEMPLATE` | Path to custom status page template file | `./web/templates/status_template.html` |
 
 ### Gmail Setup
 

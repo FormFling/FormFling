@@ -4,7 +4,7 @@ import (
 	"encoding/json"
 	"net/http"
 
-	"formfling/models"
+	"formfling/internal/models"
 )
 
 type HealthHandler struct{}

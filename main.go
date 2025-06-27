@@ -4,10 +4,10 @@ import (
 	"log"
 	"net/http"
 
-	"formfling/config"
-	"formfling/handlers"
-	"formfling/middleware"
-	"formfling/services"
+	"formfling/internal/config"
+	"formfling/internal/handlers"
+	"formfling/internal/middleware"
+	"formfling/internal/services"
 
 	"github.com/gorilla/mux"
 )
@@ -40,8 +40,8 @@ func main() {
 	r.HandleFunc("/health", healthHandler.Handle).Methods("GET")
 	r.HandleFunc("/status", statusHandler.Handle).Methods("GET")
 
-	// Static file serving for images
-	r.PathPrefix("/images/").Handler(http.StripPrefix("/images/", http.FileServer(http.Dir("./images/"))))
+	// Static file serving
+	r.PathPrefix("/").Handler(http.FileServer(http.Dir("./web/static/")))
 
 	log.Printf("FormFling server starting on port %s", cfg.Port)
 	log.Printf("Allowed origins: %v", cfg.AllowedOrigins)

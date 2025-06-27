@@ -10,9 +10,9 @@ import (
 	"strings"
 	"testing"
 
-	"formfling/config"
-	"formfling/models"
-	"formfling/services"
+	"formfling/internal/config"
+	"formfling/internal/models"
+	"formfling/internal/services"
 )
 
 // Mock email service for testing

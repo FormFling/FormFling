@@ -40,12 +40,12 @@ func TestLoad(t *testing.T) {
 		t.Errorf("Expected SMTP port 587, got %d", cfg.SMTPPort)
 	}
 
-	if cfg.EmailTemplate != "./email_template.html" {
-		t.Errorf("Expected email template './email_template.html', got %s", cfg.EmailTemplate)
+	if cfg.EmailTemplate != "./web/templates/email_template.html" {
+		t.Errorf("Expected email template './web/templates/email_template.html', got %s", cfg.EmailTemplate)
 	}
 
-	if cfg.StatusTemplate != "./status_template.html" {
-		t.Errorf("Expected status template './status_template.html', got %s", cfg.EmailTemplate)
+	if cfg.StatusTemplate != "./web/templates/status_template.html" {
+		t.Errorf("Expected status template './web/templates/status_template.html', got %s", cfg.EmailTemplate)
 	}
 
 	// Test custom values

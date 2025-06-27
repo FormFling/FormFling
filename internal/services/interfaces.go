@@ -1,6 +1,6 @@
 package services
 
-import "formfling/models"
+import "formfling/internal/models"
 
 // EmailSender defines the interface for sending emails
 type EmailSender interface {

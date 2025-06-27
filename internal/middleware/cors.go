@@ -3,7 +3,7 @@ package middleware
 import (
 	"net/http"
 
-	"formfling/config"
+	"formfling/internal/config"
 )
 
 func CORS(cfg *config.Config) func(http.Handler) http.Handler {

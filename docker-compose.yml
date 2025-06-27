@@ -29,7 +29,7 @@ services:
       # Optional customization
       - FORM_TITLE=Contact Me
       # - EMAIL_TEMPLATE=/templates/custom_template.html
-      - EMAIL_TEMPLATE=email_template.html
+      - EMAIL_TEMPLATE=./web/templates/email_template.html
       - PORT=8080
     restart: unless-stopped
     healthcheck:

@@ -26,14 +26,11 @@ WORKDIR /root/
 # Copy the binary from builder stage
 COPY --from=builder /app/formfling .
 
-# Copy the email template
-COPY --from=builder /app/email_template.html .
+# Copy templates
+COPY --from=builder /app/web/templates ./web/templates
 
-# Copy the status template
-COPY --from=builder /app/status_template.html .
-
-# Copy the images directory
-COPY --from=builder /app/images ./images
+# Copy the static directory
+COPY --from=builder /app/web/static ./web/static
 
 # Expose port
 EXPOSE 8080

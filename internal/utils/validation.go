@@ -5,7 +5,7 @@ import (
 	"regexp"
 	"strings"
 
-	"formfling/models"
+	"formfling/internal/models"
 )
 
 func CleanString(input string) string {

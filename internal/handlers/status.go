@@ -6,7 +6,7 @@ import (
 	"net/http"
 	"net/url"
 
-	"formfling/config"
+	"formfling/internal/config"
 )
 
 type StatusHandler struct {

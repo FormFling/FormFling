@@ -5,7 +5,7 @@ import (
 	"net/http/httptest"
 	"testing"
 
-	"formfling/config"
+	"formfling/internal/config"
 )
 
 func TestCORS_AllowAllOrigins(t *testing.T) {

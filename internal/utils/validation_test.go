@@ -3,7 +3,7 @@ package utils
 import (
 	"testing"
 
-	"formfling/models"
+	"formfling/internal/models"
 )
 
 func TestCleanString(t *testing.T) {
