@@ -291,4 +291,3 @@ This project is licensed under the MIT License - see the LICENSE file for detail
 ## Acknowledgments
 
 - Inspired by [Formspree](https://formspree.io/)
-- Email template design based on Formspree's email format
