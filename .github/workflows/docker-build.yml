@@ -77,6 +77,8 @@ jobs:
       - name: Generate changelog
         id: changelog
         uses: mikepenz/release-changelog-builder-action@v5
+        with:
+          mode: "HYBRID"
 
       - name: Create GitHub Release
         uses: softprops/action-gh-release@v2
