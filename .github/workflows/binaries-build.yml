@@ -8,7 +8,31 @@ env:
   GO_VERSION: '1.24'
 
 jobs:
+  create_release:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Generate changelog
+        id: changelog
+        uses: mikepenz/release-changelog-builder-action@v5
+        with:
+          mode: "HYBRID"
+
+      - name: Create GitHub Release
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: ${{ github.ref_name }}
+          body: ${{ steps.changelog.outputs.changelog }}
+          draft: false
+          prerelease: false
+
   build:
+    needs: create_release
     runs-on: ubuntu-latest
     permissions:
       contents: write
@@ -72,17 +96,10 @@ jobs:
           tar -czf ${{ steps.vars.outputs.archive_name }}.${{ steps.vars.outputs.archive_ext }} formfling-${{ github.ref_name }}-${{ matrix.os }}-${{ matrix.arch }}/
         fi
 
-    - name: Generate changelog
-      id: changelog
-      uses: mikepenz/release-changelog-builder-action@v5
-      with:
-        mode: "HYBRID"
-
     - name: Upload release asset
       uses: softprops/action-gh-release@v2
       with:
         files: |
           release/${{ steps.vars.outputs.archive_name }}.${{ steps.vars.outputs.archive_ext }}
-        body: ${{ steps.changelog.outputs.changelog }}
         draft: false
         prerelease: false
