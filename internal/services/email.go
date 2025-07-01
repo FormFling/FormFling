@@ -31,8 +31,23 @@ func NewEmailService(cfg *config.Config) *EmailService {
 	}
 }
 
-func (s *EmailService) SendEmail(formData models.FormData, origin string) error {
+// getLocalTime returns the current time in the timezone set by TZ environment variable
+func (s *EmailService) getLocalTime(cfg *config.Config) time.Time {
 	now := time.Now()
+
+	// Try to load the location from TZ
+	if loc, err := time.LoadLocation(cfg.Timezone); err == nil {
+		return now.In(loc)
+	} else {
+		log.Printf("Warning: Failed to load timezone '%s': %v. Using system local time.", cfg.Timezone, err)
+	}
+
+	// Fall back to system local time
+	return now
+}
+
+func (s *EmailService) SendEmail(formData models.FormData, origin string) error {
+	now := s.getLocalTime(s.config)
 	templateData := models.EmailTemplateData{
 		FormData:      formData,
 		SubmittedTime: now.Format("03:04 PM"),

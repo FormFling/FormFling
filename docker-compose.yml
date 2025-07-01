@@ -31,6 +31,7 @@ services:
       # - EMAIL_TEMPLATE=/templates/custom_template.html
       - EMAIL_TEMPLATE=./web/templates/email_template.html
       - PORT=8080
+      - TZ=UTC
     restart: unless-stopped
     healthcheck:
       test: ["CMD", "wget", "--no-verbose", "--tries=1", "--spider", "http://localhost:8080/health"]

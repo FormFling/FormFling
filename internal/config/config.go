@@ -7,6 +7,7 @@ import (
 )
 
 type Config struct {
+	Timezone           string
 	Port               string
 	SMTPHost           string
 	SMTPPort           int
@@ -31,6 +32,7 @@ type Config struct {
 
 func Load() *Config {
 	config := &Config{
+		Timezone:           getEnv("TZ", "UTC"),
 		Port:               getEnv("PORT", "8080"),
 		SMTPHost:           getEnv("SMTP_HOST", "smtp.gmail.com"),
 		SMTPPort:           getEnvAsInt("SMTP_PORT", 587),
