@@ -23,7 +23,7 @@ Haven't you always wanted a contact form on your website, but to keep your email
 ### Docker Compose (Recommended)
 
 ```bash
-git clone https://github.com/fireph/FormFling.git
+git clone https://github.com/FormFling/FormFling.git
 cd FormFling
 cp docker-compose.yml docker-compose.local.yml
 # Edit docker-compose.local.yml with your settings
