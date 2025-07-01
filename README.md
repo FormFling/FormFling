@@ -9,7 +9,7 @@ Haven't you always wanted a contact form on your website, but to keep your email
 
 ## Features
 
-- Single binary deployment
+- Lightweight and multiplatform
 - Gmail SMTP support
 - Beautiful HTML email templates
 - Origin-based security
@@ -49,8 +49,8 @@ docker run -d \
 Configure via environment variables:
 
 **Required:**
-- `SMTP_USERNAME` - SMTP Username (Sender email for gmail)
-- `SMTP_PASSWORD` - SMTP Password ([setup guide](#gmail-setup))
+- `SMTP_USERNAME` - SMTP Username
+- `SMTP_PASSWORD` - SMTP Password ([Gmail setup guide](#gmail-setup))
 - `FROM_EMAIL` - Sender email
 - `TO_EMAIL` - Where to send form submissions
 
