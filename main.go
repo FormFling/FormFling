@@ -24,11 +24,20 @@ func main() {
 		log.Fatal("FROM_EMAIL and TO_EMAIL are required")
 	}
 
-	// Initialize email service
+	// Initialize services
 	emailService := services.NewEmailService(cfg)
+	recaptchaService := services.NewRecaptchaService(cfg)
+
+	// Log reCAPTCHA status
+	if cfg.RecaptchaEnabled {
+		log.Printf("reCAPTCHA v3 enabled (min score: %.2f, action: %s)",
+			cfg.RecaptchaMinScore, cfg.RecaptchaAction)
+	} else {
+		log.Printf("reCAPTCHA v3 disabled (no secret key provided)")
+	}
 
 	// Setup handlers
-	submitHandler := handlers.NewSubmitHandler(cfg, emailService)
+	submitHandler := handlers.NewSubmitHandler(cfg, emailService, recaptchaService)
 	healthHandler := handlers.NewHealthHandler()
 	statusHandler := handlers.NewStatusHandler(cfg)
 
@@ -39,6 +48,11 @@ func main() {
 	r.HandleFunc("/submit", submitHandler.Handle).Methods("POST", "OPTIONS")
 	r.HandleFunc("/health", healthHandler.Handle).Methods("GET")
 	r.HandleFunc("/status", statusHandler.Handle).Methods("GET")
+
+	if cfg.EnableTestForm {
+		testFormHandler := handlers.NewTestFormHandler(cfg)
+		r.HandleFunc("/test_form", testFormHandler.Handle).Methods("GET")
+	}
 
 	// Static file serving
 	r.PathPrefix("/").Handler(http.FileServer(http.Dir("./web/static/")))

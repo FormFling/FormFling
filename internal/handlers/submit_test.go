@@ -42,7 +42,7 @@ func TestSubmitHandler_RedirectMode(t *testing.T) {
 	}
 
 	emailService := &mockEmailService{}
-	handler := NewSubmitHandler(cfg, emailService)
+	handler := NewSubmitHandler(cfg, emailService, nil)
 
 	// Test form submission without AJAX headers (should redirect)
 	formData := url.Values{
@@ -89,7 +89,7 @@ func TestSubmitHandler_AjaxMode(t *testing.T) {
 	}
 
 	emailService := &mockEmailService{}
-	handler := NewSubmitHandler(cfg, emailService)
+	handler := NewSubmitHandler(cfg, emailService, nil)
 
 	formData := url.Values{
 		"name":    {"John Doe"},
@@ -137,7 +137,7 @@ func TestSubmitHandler_JSONRequest_Success(t *testing.T) {
 	}
 
 	emailService := &mockEmailService{}
-	handler := NewSubmitHandler(cfg, emailService)
+	handler := NewSubmitHandler(cfg, emailService, nil)
 
 	// Create JSON request body
 	formData := models.FormData{
@@ -194,7 +194,7 @@ func TestSubmitHandler_JSONRequest_ValidationError(t *testing.T) {
 	}
 
 	emailService := &mockEmailService{}
-	handler := NewSubmitHandler(cfg, emailService)
+	handler := NewSubmitHandler(cfg, emailService, nil)
 
 	// Create JSON request body with invalid data
 	formData := models.FormData{
@@ -239,7 +239,7 @@ func TestSubmitHandler_JSONRequest_ParseError(t *testing.T) {
 	}
 
 	emailService := &mockEmailService{}
-	handler := NewSubmitHandler(cfg, emailService)
+	handler := NewSubmitHandler(cfg, emailService, nil)
 
 	// Create invalid JSON
 	invalidJSON := `{"name": "John", "email": }`
@@ -285,7 +285,7 @@ func TestSubmitHandler_CustomRedirect(t *testing.T) {
 	}
 
 	emailService := &mockEmailService{}
-	handler := NewSubmitHandler(cfg, emailService)
+	handler := NewSubmitHandler(cfg, emailService, nil)
 
 	// Test with custom redirect URL
 	formData := url.Values{
@@ -326,7 +326,7 @@ func TestSubmitHandler_ValidationError(t *testing.T) {
 	}
 
 	emailService := &mockEmailService{}
-	handler := NewSubmitHandler(cfg, emailService)
+	handler := NewSubmitHandler(cfg, emailService, nil)
 
 	// Test with invalid data (missing required fields)
 	formData := url.Values{
@@ -372,7 +372,7 @@ func TestSubmitHandler_AjaxValidationError(t *testing.T) {
 	}
 
 	emailService := &mockEmailService{}
-	handler := NewSubmitHandler(cfg, emailService)
+	handler := NewSubmitHandler(cfg, emailService, nil)
 
 	// Test AJAX request with invalid data
 	formData := url.Values{
@@ -412,7 +412,7 @@ func TestSubmitHandler_MethodNotAllowed(t *testing.T) {
 		FormTitle: "Test Form",
 	}
 	emailService := &mockEmailService{}
-	handler := NewSubmitHandler(cfg, emailService)
+	handler := NewSubmitHandler(cfg, emailService, nil)
 
 	// Test GET request (should fail)
 	req, err := http.NewRequest("GET", "/submit", nil)
@@ -448,7 +448,7 @@ func TestSubmitHandler_EmailServiceError(t *testing.T) {
 
 	// Mock email service that fails
 	emailService := &mockEmailService{shouldFail: true}
-	handler := NewSubmitHandler(cfg, emailService)
+	handler := NewSubmitHandler(cfg, emailService, nil)
 
 	formData := url.Values{
 		"name":    {"John Doe"},
@@ -489,7 +489,7 @@ func TestSubmitHandler_EmailServiceError(t *testing.T) {
 func TestIsAjaxRequest(t *testing.T) {
 	cfg := &config.Config{}
 	emailService := &mockEmailService{}
-	handler := NewSubmitHandler(cfg, emailService)
+	handler := NewSubmitHandler(cfg, emailService, nil)
 
 	tests := []struct {
 		name     string
@@ -556,7 +556,7 @@ func TestIsAjaxRequest(t *testing.T) {
 func TestGetRedirectURL(t *testing.T) {
 	cfg := &config.Config{}
 	emailService := &mockEmailService{}
-	handler := NewSubmitHandler(cfg, emailService)
+	handler := NewSubmitHandler(cfg, emailService, nil)
 
 	tests := []struct {
 		name         string
@@ -610,7 +610,7 @@ func TestGetRedirectURL(t *testing.T) {
 func TestAddStatusParam(t *testing.T) {
 	cfg := &config.Config{}
 	emailService := &mockEmailService{}
-	handler := NewSubmitHandler(cfg, emailService)
+	handler := NewSubmitHandler(cfg, emailService, nil)
 
 	tests := []struct {
 		name     string
@@ -653,7 +653,7 @@ func TestSubmitHandler_ParseFormError(t *testing.T) {
 		FormTitle: "Test Form",
 	}
 	emailService := &mockEmailService{}
-	handler := NewSubmitHandler(cfg, emailService)
+	handler := NewSubmitHandler(cfg, emailService, nil)
 
 	// Create a request with malformed form data
 	req, err := http.NewRequest("POST", "/submit", strings.NewReader("%"))

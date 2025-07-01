@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"io"
 	"log"
+	"net"
 	"net/http"
 	"net/url"
 	"strings"
@@ -16,14 +17,16 @@ import (
 )
 
 type SubmitHandler struct {
-	config       *config.Config
-	emailService services.EmailSender
+	config           *config.Config
+	emailService     services.EmailSender
+	recaptchaService *services.RecaptchaService
 }
 
-func NewSubmitHandler(cfg *config.Config, emailService services.EmailSender) *SubmitHandler {
+func NewSubmitHandler(cfg *config.Config, emailService services.EmailSender, recaptchaService *services.RecaptchaService) *SubmitHandler {
 	return &SubmitHandler{
-		config:       cfg,
-		emailService: emailService,
+		config:           cfg,
+		emailService:     emailService,
+		recaptchaService: recaptchaService,
 	}
 }
 
@@ -52,12 +55,23 @@ func (h *SubmitHandler) Handle(w http.ResponseWriter, r *http.Request) {
 			return
 		}
 		formData = models.FormData{
-			Name:    utils.CleanString(r.FormValue("name")),
-			Email:   utils.CleanString(r.FormValue("email")),
-			Subject: utils.CleanString(r.FormValue("subject")),
-			Message: utils.CleanString(r.FormValue("message")),
-			Phone:   utils.CleanString(r.FormValue("phone")),
-			Website: utils.CleanString(r.FormValue("website")),
+			Name:              utils.CleanString(r.FormValue("name")),
+			Email:             utils.CleanString(r.FormValue("email")),
+			Subject:           utils.CleanString(r.FormValue("subject")),
+			Message:           utils.CleanString(r.FormValue("message")),
+			Phone:             utils.CleanString(r.FormValue("phone")),
+			Website:           utils.CleanString(r.FormValue("website")),
+			RecaptchaResponse: r.FormValue("g-recaptcha-response"), // Don't clean the token
+		}
+	}
+
+	// Verify reCAPTCHA if enabled
+	if h.config.RecaptchaEnabled {
+		remoteIP := h.getClientIP(r)
+		if err := h.recaptchaService.VerifyToken(formData.RecaptchaResponse, remoteIP); err != nil {
+			log.Printf("reCAPTCHA verification failed: %v", err)
+			h.handleError(w, r, "reCAPTCHA verification failed", http.StatusBadRequest)
+			return
 		}
 	}
 
@@ -98,7 +112,7 @@ func (h *SubmitHandler) parseJSONRequest(r *http.Request) (models.FormData, erro
 		return formData, fmt.Errorf("failed to unmarshal JSON: %v", err)
 	}
 
-	// Clean the data
+	// Clean the data (but not the reCAPTCHA token)
 	formData.Name = utils.CleanString(formData.Name)
 	formData.Email = utils.CleanString(formData.Email)
 	formData.Subject = utils.CleanString(formData.Subject)
@@ -107,6 +121,28 @@ func (h *SubmitHandler) parseJSONRequest(r *http.Request) (models.FormData, erro
 	formData.Website = utils.CleanString(formData.Website)
 
 	return formData, nil
+}
+
+func (h *SubmitHandler) getClientIP(r *http.Request) string {
+	// Check for X-Forwarded-For header (common in reverse proxy setups)
+	if forwarded := r.Header.Get("X-Forwarded-For"); forwarded != "" {
+		// X-Forwarded-For can contain multiple IPs, take the first one
+		if ips := strings.Split(forwarded, ","); len(ips) > 0 {
+			return strings.TrimSpace(ips[0])
+		}
+	}
+
+	// Check for X-Real-IP header
+	if realIP := r.Header.Get("X-Real-IP"); realIP != "" {
+		return realIP
+	}
+
+	// Fall back to RemoteAddr
+	if ip, _, err := net.SplitHostPort(r.RemoteAddr); err == nil {
+		return ip
+	}
+
+	return r.RemoteAddr
 }
 
 func (h *SubmitHandler) handleSuccess(w http.ResponseWriter, r *http.Request) {

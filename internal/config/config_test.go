@@ -11,6 +11,9 @@ func TestLoad(t *testing.T) {
 	originalSMTPHost := os.Getenv("SMTP_HOST")
 	originalOrigins := os.Getenv("ALLOWED_ORIGINS")
 	originalEmailTemplate := os.Getenv("EMAIL_TEMPLATE")
+	originalRecaptchaSecret := os.Getenv("RECAPTCHA_SECRET_KEY")
+	originalRecaptchaScore := os.Getenv("RECAPTCHA_MIN_SCORE")
+	originalRecaptchaAction := os.Getenv("RECAPTCHA_ACTION")
 
 	// Clean up after test
 	defer func() {
@@ -18,6 +21,9 @@ func TestLoad(t *testing.T) {
 		os.Setenv("SMTP_HOST", originalSMTPHost)
 		os.Setenv("ALLOWED_ORIGINS", originalOrigins)
 		os.Setenv("EMAIL_TEMPLATE", originalEmailTemplate)
+		os.Setenv("RECAPTCHA_SECRET_KEY", originalRecaptchaSecret)
+		os.Setenv("RECAPTCHA_MIN_SCORE", originalRecaptchaScore)
+		os.Setenv("RECAPTCHA_ACTION", originalRecaptchaAction)
 	}()
 
 	// Test default values
@@ -25,6 +31,9 @@ func TestLoad(t *testing.T) {
 	os.Unsetenv("SMTP_HOST")
 	os.Unsetenv("ALLOWED_ORIGINS")
 	os.Unsetenv("EMAIL_TEMPLATE")
+	os.Unsetenv("RECAPTCHA_SECRET_KEY")
+	os.Unsetenv("RECAPTCHA_MIN_SCORE")
+	os.Unsetenv("RECAPTCHA_ACTION")
 
 	cfg := Load()
 
@@ -45,7 +54,20 @@ func TestLoad(t *testing.T) {
 	}
 
 	if cfg.StatusTemplate != "./web/templates/status_template.html" {
-		t.Errorf("Expected status template './web/templates/status_template.html', got %s", cfg.EmailTemplate)
+		t.Errorf("Expected status template './web/templates/status_template.html', got %s", cfg.StatusTemplate)
+	}
+
+	// Test reCAPTCHA defaults
+	if cfg.RecaptchaEnabled {
+		t.Error("Expected reCAPTCHA to be disabled by default")
+	}
+
+	if cfg.RecaptchaMinScore != 0.5 {
+		t.Errorf("Expected default reCAPTCHA min score 0.5, got %f", cfg.RecaptchaMinScore)
+	}
+
+	if cfg.RecaptchaAction != "submit" {
+		t.Errorf("Expected default reCAPTCHA action 'submit', got %s", cfg.RecaptchaAction)
 	}
 
 	// Test custom values
@@ -54,6 +76,9 @@ func TestLoad(t *testing.T) {
 	os.Setenv("ALLOWED_ORIGINS", "https://example.com,https://test.com")
 	os.Setenv("EMAIL_TEMPLATE", "/custom/email_template.html")
 	os.Setenv("STATUS_TEMPLATE", "/custom/status_template.html")
+	os.Setenv("RECAPTCHA_SECRET_KEY", "test-secret-key")
+	os.Setenv("RECAPTCHA_MIN_SCORE", "0.8")
+	os.Setenv("RECAPTCHA_ACTION", "contact")
 
 	cfg = Load()
 
@@ -78,7 +103,24 @@ func TestLoad(t *testing.T) {
 	}
 
 	if cfg.StatusTemplate != "/custom/status_template.html" {
-		t.Errorf("Expected email template '/custom/status_template.html', got %s", cfg.EmailTemplate)
+		t.Errorf("Expected status template '/custom/status_template.html', got %s", cfg.StatusTemplate)
+	}
+
+	// Test reCAPTCHA custom values
+	if !cfg.RecaptchaEnabled {
+		t.Error("Expected reCAPTCHA to be enabled when secret key is provided")
+	}
+
+	if cfg.RecaptchaSecretKey != "test-secret-key" {
+		t.Errorf("Expected reCAPTCHA secret key 'test-secret-key', got %s", cfg.RecaptchaSecretKey)
+	}
+
+	if cfg.RecaptchaMinScore != 0.8 {
+		t.Errorf("Expected reCAPTCHA min score 0.8, got %f", cfg.RecaptchaMinScore)
+	}
+
+	if cfg.RecaptchaAction != "contact" {
+		t.Errorf("Expected reCAPTCHA action 'contact', got %s", cfg.RecaptchaAction)
 	}
 }
 
@@ -118,5 +160,29 @@ func TestGetEnvAsInt(t *testing.T) {
 	result = getEnvAsInt("TEST_INVALID_INT", 789)
 	if result != 789 {
 		t.Errorf("Expected 789 (default), got %d", result)
+	}
+}
+
+func TestGetEnvAsFloat(t *testing.T) {
+	result := getEnvAsFloat("NONEXISTENT_VAR", 1.23)
+	if result != 1.23 {
+		t.Errorf("Expected 1.23, got %f", result)
+	}
+
+	os.Setenv("TEST_FLOAT_VAR", "4.56")
+	defer os.Unsetenv("TEST_FLOAT_VAR")
+
+	result = getEnvAsFloat("TEST_FLOAT_VAR", 1.23)
+	if result != 4.56 {
+		t.Errorf("Expected 4.56, got %f", result)
+	}
+
+	// Test invalid float
+	os.Setenv("TEST_INVALID_FLOAT", "not_a_number")
+	defer os.Unsetenv("TEST_INVALID_FLOAT")
+
+	result = getEnvAsFloat("TEST_INVALID_FLOAT", 7.89)
+	if result != 7.89 {
+		t.Errorf("Expected 7.89 (default), got %f", result)
 	}
 }

@@ -1,0 +1,147 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>reCAPTCHA Token Generator</title>
+    <script src="https://www.google.com/recaptcha/api.js?render={{.SiteKey}}"></script>
+    <style>
+      body {
+        font-family: Arial, sans-serif;
+        max-width: 600px;
+        margin: 50px auto;
+        padding: 20px;
+        line-height: 1.6;
+      }
+      button {
+        background: #007cba;
+        color: white;
+        padding: 10px 20px;
+        border: none;
+        border-radius: 4px;
+        cursor: pointer;
+        font-size: 16px;
+        margin: 10px 0;
+      }
+      button:hover {
+        background: #005a87;
+      }
+      .token-output {
+        background: #f5f5f5;
+        padding: 15px;
+        border-radius: 4px;
+        margin: 10px 0;
+        word-break: break-all;
+        font-family: monospace;
+        border: 1px solid #ddd;
+      }
+      .curl-command {
+        background: #333;
+        color: #fff;
+        padding: 15px;
+        border-radius: 4px;
+        margin: 10px 0;
+        font-family: monospace;
+        overflow-x: auto;
+        white-space: pre-wrap;
+      }
+      .warning {
+        background: #fff3cd;
+        color: #856404;
+        padding: 10px;
+        border: 1px solid #ffeaa7;
+        border-radius: 4px;
+        margin: 10px 0;
+      }
+    </style>
+  </head>
+  <body>
+    <h1>reCAPTCHA Token Generator</h1>
+
+    <p>
+      This page generates reCAPTCHA v3 tokens that you can use for testing with
+      curl.
+    </p>
+
+    <button onclick="generateToken()">Generate reCAPTCHA Token</button>
+
+    <div id="output"></div>
+
+    <h2>Instructions:</h2>
+    <ol>
+      <li>
+        Set "RECAPTCHA_SITE_KEY" and "RECAPTCHA_SECRET_KEY" environment
+        variables before running the server.
+      </li>
+      <li>Open this page in a browser</li>
+      <li>Click "Generate reCAPTCHA Token"</li>
+      <li>Copy the generated curl command</li>
+      <li>Run it in your terminal within 2 minutes (tokens expire)</li>
+    </ol>
+
+    <script>
+      const SITE_KEY = "{{.SiteKey}}";
+
+      function generateToken() {
+        const output = document.getElementById("output");
+
+        if (SITE_KEY === "") {
+          output.innerHTML = `
+              <div class="warning">
+                  <strong>Error:</strong> Please set "RECAPTCHA_SITE_KEY" and "RECAPTCHA_SECRET_KEY" as an environment variables.
+              </div>
+            `;
+          return;
+        }
+
+        output.innerHTML = "<p>Generating token...</p>";
+
+        grecaptcha.ready(function () {
+          grecaptcha
+            .execute(SITE_KEY, { action: "submit" })
+            .then(function (token) {
+              const curlCommand = `curl -X POST http://localhost:8080/submit \\
+  -H "Content-Type: application/x-www-form-urlencoded" \\
+  -d "name=Test User" \\
+  -d "email=test@example.com" \\
+  -d "message=This is a test message from curl" \\
+  -d "g-recaptcha-response=${token}"`;
+
+              const jsonCurlCommand = `curl -X POST http://localhost:8080/submit \\
+  -H "Content-Type: application/json" \\
+  -d '{
+    "name": "Test User",
+    "email": "test@example.com", 
+    "message": "This is a test message from curl",
+    "g-recaptcha-response": "${token}"
+  }'`;
+
+              output.innerHTML = `
+                        <h3>Generated Token:</h3>
+                        <div class="token-output">${token}</div>
+                        
+                        <h3>Form Data curl Command:</h3>
+                        <div class="curl-command">${curlCommand}</div>
+                        
+                        <h3>JSON curl Command:</h3>
+                        <div class="curl-command">${jsonCurlCommand}</div>
+                        
+                        <div class="warning">
+                            <strong>Note:</strong> This token expires in 2 minutes. Generate a new one if needed.
+                        </div>
+                        
+                        <button onclick="generateToken()">Generate New Token</button>
+                    `;
+            })
+            .catch(function (error) {
+              output.innerHTML = `
+                        <div class="warning">
+                            <strong>Error:</strong> ${error.message}
+                        </div>
+                    `;
+            });
+        });
+      }
+    </script>
+  </body>
+</html>
