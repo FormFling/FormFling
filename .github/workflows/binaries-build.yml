@@ -15,25 +15,8 @@ jobs:
 
     strategy:
       matrix:
-        include:
-          - os: linux
-            arch: amd64
-            extension: ""
-          - os: linux
-            arch: arm64
-            extension: ""
-          - os: darwin
-            arch: amd64
-            extension: ""
-          - os: darwin
-            arch: arm64
-            extension: ""
-          - os: windows
-            arch: amd64
-            extension: ".exe"
-          - os: windows
-            arch: arm64
-            extension: ".exe"
+        os: [linux, darwin, windows]
+        arch: [amd64, arm64]
 
     steps:
     - name: Checkout repository
@@ -51,13 +34,17 @@ jobs:
     - name: Set build variables
       id: vars
       run: |
-        echo "binary_name=formfling${{ matrix.extension }}" >> $GITHUB_OUTPUT
-        echo "archive_name=formfling-${{ github.ref_name }}-${{ matrix.os }}-${{ matrix.arch }}" >> $GITHUB_OUTPUT
         if [ "${{ matrix.os }}" = "windows" ]; then
-          echo "archive_ext=zip" >> $GITHUB_OUTPUT
+          extension=".exe"
+          archive_ext="zip"
         else
-          echo "archive_ext=tar.gz" >> $GITHUB_OUTPUT
+          extension=""
+          archive_ext="tar.gz"
         fi
+        echo "extension=$extension" >> $GITHUB_OUTPUT
+        echo "archive_ext=$archive_ext" >> $GITHUB_OUTPUT
+        echo "binary_name=formfling${extension}" >> $GITHUB_OUTPUT
+        echo "archive_name=formfling-${{ github.ref_name }}-${{ matrix.os }}-${{ matrix.arch }}" >> $GITHUB_OUTPUT
 
     - name: Build binary
       env:
@@ -76,17 +63,14 @@ jobs:
         cp LICENSE release/formfling-${{ github.ref_name }}-${{ matrix.os }}-${{ matrix.arch }}/
         cp .env.example release/formfling-${{ github.ref_name }}-${{ matrix.os }}-${{ matrix.arch }}/
 
-    - name: Create archive (tar.gz)
-      if: matrix.os != 'windows'
+    - name: Create archive
       working-directory: release
       run: |
-        tar -czf ${{ steps.vars.outputs.archive_name }}.tar.gz formfling-${{ github.ref_name }}-${{ matrix.os }}-${{ matrix.arch }}/
-
-    - name: Create archive (zip)
-      if: matrix.os == 'windows'
-      working-directory: release
-      run: |
-        zip -r ${{ steps.vars.outputs.archive_name }}.zip formfling-${{ github.ref_name }}-${{ matrix.os }}-${{ matrix.arch }}/
+        if [ "${{ steps.vars.outputs.archive_ext }}" = "zip" ]; then
+          zip -r ${{ steps.vars.outputs.archive_name }}.${{ steps.vars.outputs.archive_ext }} formfling-${{ github.ref_name }}-${{ matrix.os }}-${{ matrix.arch }}/
+        else
+          tar -czf ${{ steps.vars.outputs.archive_name }}.${{ steps.vars.outputs.archive_ext }} formfling-${{ github.ref_name }}-${{ matrix.os }}-${{ matrix.arch }}/
+        fi
 
     - name: Generate changelog
       id: changelog
