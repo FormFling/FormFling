@@ -74,8 +74,8 @@ FormFling is configured entirely through environment variables:
 | `TO_NAME` | Recipient display name | `` |
 | `ALLOWED_ORIGINS` | Comma-separated allowed origins | `*` (allows all) |
 | `FORM_TITLE` | Form title in emails | `Contact Me` |
-| `EMAIL_TEMPLATE` | Path to custom email template file | `./web/templates/email_template.html` |
-| `STATUS_TEMPLATE` | Path to custom status page template file | `./web/templates/status_template.html` |
+| `EMAIL_TEMPLATE` | Path to custom email template file | `./web/templates/email.html` |
+| `STATUS_TEMPLATE` | Path to custom status page template file | `./web/templates/status.html` |
 
 ### Gmail Setup
 
@@ -96,12 +96,12 @@ FormFling supports custom email templates. You can provide your own HTML templat
 docker run -d \
   --name formfling \
   -p 8080:8080 \
-  -v /path/to/your/template:/templates/custom_email_template.html \
+  -v /path/to/your/template:/templates/custom_email.html \
   -e SMTP_USERNAME=your-email@gmail.com \
   -e SMTP_PASSWORD=your-app-password \
   -e FROM_EMAIL=your-email@gmail.com \
   -e TO_EMAIL=recipient@example.com \
-  -e EMAIL_TEMPLATE=/templates/custom_email_template.html \
+  -e EMAIL_TEMPLATE=/templates/custom_email.html \
   dungfu/form-fling:latest
 ```
 
@@ -128,12 +128,12 @@ FormFling supports custom status page templates. You can provide your own HTML t
 docker run -d \
   --name formfling \
   -p 8080:8080 \
-  -v /path/to/your/status_template:/templates/custom_status_template.html \
+  -v /path/to/your/status_template:/templates/custom_status.html \
   -e SMTP_USERNAME=your-email@gmail.com \
   -e SMTP_PASSWORD=your-app-password \
   -e FROM_EMAIL=your-email@gmail.com \
   -e TO_EMAIL=recipient@example.com \
-  -e STATUS_TEMPLATE=/templates/custom_status_template.html \
+  -e STATUS_TEMPLATE=/templates/custom_status.html \
   dungfu/form-fling:latest
 ```
 

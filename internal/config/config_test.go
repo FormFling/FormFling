@@ -40,20 +40,20 @@ func TestLoad(t *testing.T) {
 		t.Errorf("Expected SMTP port 587, got %d", cfg.SMTPPort)
 	}
 
-	if cfg.EmailTemplate != "./web/templates/email_template.html" {
-		t.Errorf("Expected email template './web/templates/email_template.html', got %s", cfg.EmailTemplate)
+	if cfg.EmailTemplate != "./web/templates/email.html" {
+		t.Errorf("Expected email template './web/templates/email.html', got %s", cfg.EmailTemplate)
 	}
 
-	if cfg.StatusTemplate != "./web/templates/status_template.html" {
-		t.Errorf("Expected status template './web/templates/status_template.html', got %s", cfg.EmailTemplate)
+	if cfg.StatusTemplate != "./web/templates/status.html" {
+		t.Errorf("Expected status template './web/templates/status.html', got %s", cfg.EmailTemplate)
 	}
 
 	// Test custom values
 	os.Setenv("PORT", "3000")
 	os.Setenv("SMTP_HOST", "smtp.example.com")
 	os.Setenv("ALLOWED_ORIGINS", "https://example.com,https://test.com")
-	os.Setenv("EMAIL_TEMPLATE", "/custom/email_template.html")
-	os.Setenv("STATUS_TEMPLATE", "/custom/status_template.html")
+	os.Setenv("EMAIL_TEMPLATE", "/custom/email.html")
+	os.Setenv("STATUS_TEMPLATE", "/custom/status.html")
 
 	cfg = Load()
 
@@ -73,12 +73,12 @@ func TestLoad(t *testing.T) {
 		t.Errorf("Expected https://example.com, got %s", cfg.AllowedOrigins[0])
 	}
 
-	if cfg.EmailTemplate != "/custom/email_template.html" {
-		t.Errorf("Expected email template '/custom/email_template.html', got %s", cfg.EmailTemplate)
+	if cfg.EmailTemplate != "/custom/email.html" {
+		t.Errorf("Expected email template '/custom/email.html', got %s", cfg.EmailTemplate)
 	}
 
-	if cfg.StatusTemplate != "/custom/status_template.html" {
-		t.Errorf("Expected email template '/custom/status_template.html', got %s", cfg.EmailTemplate)
+	if cfg.StatusTemplate != "/custom/status.html" {
+		t.Errorf("Expected email template '/custom/status.html', got %s", cfg.EmailTemplate)
 	}
 }
 
