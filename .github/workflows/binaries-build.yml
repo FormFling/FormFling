@@ -1,0 +1,104 @@
+name: Build and Release Binaries
+
+on:
+  push:
+    tags: [ 'v*' ]
+
+env:
+  GO_VERSION: '1.24'
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+
+    strategy:
+      matrix:
+        include:
+          - os: linux
+            arch: amd64
+            extension: ""
+          - os: linux
+            arch: arm64
+            extension: ""
+          - os: darwin
+            arch: amd64
+            extension: ""
+          - os: darwin
+            arch: arm64
+            extension: ""
+          - os: windows
+            arch: amd64
+            extension: ".exe"
+          - os: windows
+            arch: arm64
+            extension: ".exe"
+
+    steps:
+    - name: Checkout repository
+      uses: actions/checkout@v4
+
+    - name: Set up Go
+      uses: actions/setup-go@v5
+      with:
+        go-version: ${{ env.GO_VERSION }}
+        cache: true
+
+    - name: Download dependencies
+      run: go mod download
+
+    - name: Set build variables
+      id: vars
+      run: |
+        echo "binary_name=formfling${{ matrix.extension }}" >> $GITHUB_OUTPUT
+        echo "archive_name=formfling-${{ github.ref_name }}-${{ matrix.os }}-${{ matrix.arch }}" >> $GITHUB_OUTPUT
+        if [ "${{ matrix.os }}" = "windows" ]; then
+          echo "archive_ext=zip" >> $GITHUB_OUTPUT
+        else
+          echo "archive_ext=tar.gz" >> $GITHUB_OUTPUT
+        fi
+
+    - name: Build binary
+      env:
+        GOOS: ${{ matrix.os }}
+        GOARCH: ${{ matrix.arch }}
+        CGO_ENABLED: 0
+      run: |
+        go build -a -installsuffix cgo -ldflags "-s -w" -o ${{ steps.vars.outputs.binary_name }} .
+
+    - name: Create release directory
+      run: |
+        mkdir -p release/formfling-${{ github.ref_name }}-${{ matrix.os }}-${{ matrix.arch }}
+        cp ${{ steps.vars.outputs.binary_name }} release/formfling-${{ github.ref_name }}-${{ matrix.os }}-${{ matrix.arch }}/
+        cp -r web/ release/formfling-${{ github.ref_name }}-${{ matrix.os }}-${{ matrix.arch }}/
+        cp README.md release/formfling-${{ github.ref_name }}-${{ matrix.os }}-${{ matrix.arch }}/
+        cp LICENSE release/formfling-${{ github.ref_name }}-${{ matrix.os }}-${{ matrix.arch }}/
+        cp .env.example release/formfling-${{ github.ref_name }}-${{ matrix.os }}-${{ matrix.arch }}/
+
+    - name: Create archive (tar.gz)
+      if: matrix.os != 'windows'
+      working-directory: release
+      run: |
+        tar -czf ${{ steps.vars.outputs.archive_name }}.tar.gz formfling-${{ github.ref_name }}-${{ matrix.os }}-${{ matrix.arch }}/
+
+    - name: Create archive (zip)
+      if: matrix.os == 'windows'
+      working-directory: release
+      run: |
+        zip -r ${{ steps.vars.outputs.archive_name }}.zip formfling-${{ github.ref_name }}-${{ matrix.os }}-${{ matrix.arch }}/
+
+    - name: Generate changelog
+      id: changelog
+      uses: mikepenz/release-changelog-builder-action@v5
+      with:
+        mode: "HYBRID"
+
+    - name: Upload release asset
+      uses: softprops/action-gh-release@v2
+      with:
+        files: |
+          release/${{ steps.vars.outputs.archive_name }}.${{ steps.vars.outputs.archive_ext }}
+        body: ${{ steps.changelog.outputs.changelog }}
+        draft: false
+        prerelease: false
