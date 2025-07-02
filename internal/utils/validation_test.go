@@ -64,7 +64,7 @@ func TestValidateForm(t *testing.T) {
 	validForm := models.FormData{
 		Name:    "John Doe",
 		Email:   "john@example.com",
-		Message: "This is a valid message with enough characters",
+		Message: "This is a valid message with enough characters. This is a valid message with enough characters. This is a valid message with enough characters. This is a valid message with enough characters. This is a valid message with enough characters. This is a valid message with enough characters. This is a valid message with enough characters.",
 	}
 
 	if err := ValidateForm(validForm); err != nil {
@@ -75,7 +75,7 @@ func TestValidateForm(t *testing.T) {
 	invalidForm := models.FormData{
 		Name:    "",
 		Email:   "john@example.com",
-		Message: "This is a valid message",
+		Message: "This is a valid message with enough characters. This is a valid message with enough characters. This is a valid message with enough characters. This is a valid message with enough characters. This is a valid message with enough characters. This is a valid message with enough characters. This is a valid message with enough characters.",
 	}
 
 	if err := ValidateForm(invalidForm); err == nil {
@@ -86,7 +86,7 @@ func TestValidateForm(t *testing.T) {
 	invalidForm = models.FormData{
 		Name:    "John Doe",
 		Email:   "",
-		Message: "This is a valid message",
+		Message: "This is a valid message with enough characters. This is a valid message with enough characters. This is a valid message with enough characters. This is a valid message with enough characters. This is a valid message with enough characters. This is a valid message with enough characters. This is a valid message with enough characters.",
 	}
 
 	if err := ValidateForm(invalidForm); err == nil {
@@ -97,7 +97,7 @@ func TestValidateForm(t *testing.T) {
 	invalidForm = models.FormData{
 		Name:    "John Doe",
 		Email:   "not-an-email",
-		Message: "This is a valid message",
+		Message: "This is a valid message with enough characters. This is a valid message with enough characters. This is a valid message with enough characters. This is a valid message with enough characters. This is a valid message with enough characters. This is a valid message with enough characters. This is a valid message with enough characters.",
 	}
 
 	if err := ValidateForm(invalidForm); err == nil {
