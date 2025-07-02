@@ -48,7 +48,7 @@ func TestSubmitHandler_RedirectMode(t *testing.T) {
 	formData := url.Values{
 		"name":    {"John Doe"},
 		"email":   {"john@example.com"},
-		"message": {"This is a test message with enough characters"},
+		"message": {"This is a valid message with enough characters. This is a valid message with enough characters. This is a valid message with enough characters. This is a valid message with enough characters. This is a valid message with enough characters. This is a valid message with enough characters. This is a valid message with enough characters."},
 	}
 
 	req, err := http.NewRequest("POST", "/submit", strings.NewReader(formData.Encode()))
@@ -94,7 +94,7 @@ func TestSubmitHandler_AjaxMode(t *testing.T) {
 	formData := url.Values{
 		"name":    {"John Doe"},
 		"email":   {"john@example.com"},
-		"message": {"This is a test message with enough characters"},
+		"message": {"This is a valid message with enough characters. This is a valid message with enough characters. This is a valid message with enough characters. This is a valid message with enough characters. This is a valid message with enough characters. This is a valid message with enough characters. This is a valid message with enough characters."},
 	}
 
 	req, err := http.NewRequest("POST", "/submit", strings.NewReader(formData.Encode()))
@@ -143,7 +143,7 @@ func TestSubmitHandler_JSONRequest_Success(t *testing.T) {
 	formData := models.FormData{
 		Name:    "John Doe",
 		Email:   "john@example.com",
-		Message: "This is a test message with enough characters",
+		Message: "This is a valid message with enough characters. This is a valid message with enough characters. This is a valid message with enough characters. This is a valid message with enough characters. This is a valid message with enough characters. This is a valid message with enough characters. This is a valid message with enough characters.",
 	}
 
 	jsonData, err := json.Marshal(formData)
@@ -291,7 +291,7 @@ func TestSubmitHandler_CustomRedirect(t *testing.T) {
 	formData := url.Values{
 		"name":      {"John Doe"},
 		"email":     {"john@example.com"},
-		"message":   {"This is a test message with enough characters"},
+		"message":   {"This is a valid message with enough characters. This is a valid message with enough characters. This is a valid message with enough characters. This is a valid message with enough characters. This is a valid message with enough characters. This is a valid message with enough characters. This is a valid message with enough characters."},
 		"_redirect": {"https://example.com/thank-you"},
 	}
 
@@ -453,7 +453,7 @@ func TestSubmitHandler_EmailServiceError(t *testing.T) {
 	formData := url.Values{
 		"name":    {"John Doe"},
 		"email":   {"john@example.com"},
-		"message": {"This is a test message with enough characters"},
+		"message": {"This is a valid message with enough characters. This is a valid message with enough characters. This is a valid message with enough characters. This is a valid message with enough characters. This is a valid message with enough characters. This is a valid message with enough characters. This is a valid message with enough characters."},
 	}
 
 	req, err := http.NewRequest("POST", "/submit", strings.NewReader(formData.Encode()))
