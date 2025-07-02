@@ -45,7 +45,7 @@ func ValidateForm(form models.FormData) error {
 		return fmt.Errorf("email not valid")
 	}
 
-	if len(strings.TrimSpace(form.Message)) < 10 {
+	if len(strings.TrimSpace(form.Message)) < 300 {
 		return fmt.Errorf("message not valid")
 	}
 
